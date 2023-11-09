@@ -644,9 +644,12 @@ class DatabaseSource(BaseDatabaseSource, PlrBaseSource):
                 if session.query(self._model_).count() == 0:
                     # We can stop here already because there are no items in the database
                     try:
-                        self.records = [EmptyPlrRecord(Config.get_theme_by_code_sub_code(self._plr_info['code'], self._plr_info['sub_code']))]
+                        theme = Config.get_theme_by_code_sub_code(self._plr_info['code'], self._plr_info['sub_code'])
                     except:
-                        self.records = [EmptyPlrRecord(Config.get_theme_by_code_sub_code(self._plr_info['code']))]
+                        theme = Config.get_theme_by_code_sub_code(self._plr_info['code'])
+                    
+                    if not self._plr_info.get('ignore', False):
+                        self.records = [EmptyPlrRecord(theme)]
                 else:
                     # We need to investigate more in detail
 
@@ -658,13 +661,12 @@ class DatabaseSource(BaseDatabaseSource, PlrBaseSource):
                         # We checked if there are spatially related elements in database. But there is none.
                         # So we can stop here.
                         try:
-                            self.records = [EmptyPlrRecord(
-                                Config.get_theme_by_code_sub_code(self._plr_info['code'], self._plr_info['sub_code'])
-                            )]
+                            theme = Config.get_theme_by_code_sub_code(self._plr_info['code'], self._plr_info['sub_code'])
                         except:
-                            self.records = [EmptyPlrRecord(
-                                Config.get_theme_by_code_sub_code(self._plr_info['code'])
-                            )]
+                            theme = Config.get_theme_by_code_sub_code(self._plr_info['code'])
+
+                        if not self._plr_info.get('ignore', False):
+                            self.records = [EmptyPlrRecord(theme)]
                     else:
                         # We found spatially related elements. This means we need to extract the actual plr
                         # information related to the found geometries.
