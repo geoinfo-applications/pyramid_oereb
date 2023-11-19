@@ -262,10 +262,9 @@ class Renderer(JsonRenderer):
                 self._multilingual_text(theme, 'Text')
 
         # extract theme titles for later use before resetting "ConcernedTheme"
-        themeTitlesConcerned = {theme["Code"]: theme["Text"]
-                       for theme in (extract_dict.get("ConcernedTheme", []))}
-        themeTitlesNotConcerned = {theme["Code"]: theme["Text"]
-                       for theme in (extract_dict.get("NotConcernedTheme", []))}
+        themeTitles = {theme["Code"]: theme["Text"]
+                       for theme in (extract_dict.get("ConcernedTheme", [])
+                                     + extract_dict.get("NotConcernedTheme", []))}
         extract_dict['ConcernedTheme'] = []
         self._flatten_object(extract_dict, 'PLRCadastreAuthority')
         self._multilingual_text(extract_dict, 'PLRCadastreAuthority_OfficeAtWeb')
@@ -417,7 +416,7 @@ class Renderer(JsonRenderer):
 
             theme_text = restriction_on_landownership['Theme_Text']
             if 'Theme_SubCode' in restriction_on_landownership:
-                main_theme_text = themeTitlesConcerned.get(restriction_on_landownership['Theme_Code']) or themeTitlesNotConcerned.get(restriction_on_landownership['Theme_Code'])
+                main_theme_text = themeTitles.get(restriction_on_landownership['Theme_Code'])
                 if main_theme_text is not None:
                     theme_text = f"{main_theme_text}: {theme_text}"
 
