@@ -93,7 +93,7 @@ class Renderer(Base):
             'PLRCadastreAuthority': self.format_office(extract.plr_cadastre_authority),
             'RealEstate': self.format_real_estate(extract.real_estate),
             'ConcernedTheme': [self.format_theme(theme) for theme in extract.concerned_theme],
-            'NotConcernedTheme': [self.format_theme(theme) for theme in extract.not_concerned_theme],
+            'NotConcernedTheme': [self.format_theme(theme, plr.sub_theme, True) for theme, plr in zip(extract.not_concerned_theme, extract.not_concerned_themes_plrs)],
             'ThemeWithoutData': [self.format_theme(theme) for theme in extract.theme_without_data]
         }
 
@@ -441,7 +441,7 @@ class Renderer(Base):
             office_dict['City'] = office.city
         return office_dict
 
-    def format_theme(self, theme, sub_theme=None):
+    def format_theme(self, theme, sub_theme=None, concat_titles=False):
         """
         Formats a theme record for rendering according to the federal specification.
 
@@ -458,9 +458,15 @@ class Renderer(Base):
             'Text': [self.get_localized_text(theme.title)]
         }
         if isinstance(sub_theme, ThemeRecord):  # only for sub-themes
+            text = self.get_localized_text(sub_theme.title)
+            if concat_titles:
+                combined_titles = {}
+                for key in theme.title:
+                    combined_titles[key] = f"{theme.title[key]}: {sub_theme.title[key]}"
+                text = self.get_localized_text(combined_titles)
             theme_dict.update({
                 'SubCode': sub_theme.sub_code,
-                'Text': [self.get_localized_text(sub_theme.title)]
+                'Text': [text]
             })
 
         return theme_dict
