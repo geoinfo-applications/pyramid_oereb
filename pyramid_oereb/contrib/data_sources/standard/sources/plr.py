@@ -644,10 +644,14 @@ class DatabaseSource(BaseDatabaseSource, PlrBaseSource):
                 if session.query(self._model_).count() == 0:
                     # We can stop here already because there are no items in the database
                     try:
-                        theme = Config.get_theme_by_code_sub_code(self._plr_info['code'], self._plr_info['sub_code'])
+                        if params.format == "pdf":
+                            # theme = Config.get_theme_by_code_sub_code(self._plr_info['code'])
+                            theme = Config.get_theme_by_code_sub_code(self._plr_info['code'], self._plr_info['sub_code'])
+                        else:
+                            theme = Config.get_theme_by_code_sub_code(self._plr_info['code'], self._plr_info['sub_code'])
                     except:
                         theme = Config.get_theme_by_code_sub_code(self._plr_info['code'])
-                    
+
                     if not self._plr_info.get('ignore', False):
                         self.records = [EmptyPlrRecord(theme)]
                 else:
@@ -661,7 +665,11 @@ class DatabaseSource(BaseDatabaseSource, PlrBaseSource):
                         # We checked if there are spatially related elements in database. But there is none.
                         # So we can stop here.
                         try:
-                            theme = Config.get_theme_by_code_sub_code(self._plr_info['code'], self._plr_info['sub_code'])
+                            if params.format == "pdf":
+                                # theme = Config.get_theme_by_code_sub_code(self._plr_info['code'])
+                                theme = Config.get_theme_by_code_sub_code(self._plr_info['code'], self._plr_info['sub_code'])
+                            else:
+                                theme = Config.get_theme_by_code_sub_code(self._plr_info['code'], self._plr_info['sub_code'])
                         except:
                             theme = Config.get_theme_by_code_sub_code(self._plr_info['code'])
 
