@@ -43,7 +43,7 @@ class ExtractRecord(object):
 
     def __init__(self, real_estate, logo_plr_cadastre, federal_logo, cantonal_logo, municipality_logo,
                  plr_cadastre_authority, update_date_os, disclaimers=None, glossaries=None,
-                 concerned_theme=None, not_concerned_theme=None, theme_without_data=None,
+                 concerned_theme=None, not_concerned_theme=None, not_concerned_themes_plrs=None, theme_without_data=None,
                  general_information=None, qr_code=None, qr_code_ref=None):
         """
         Args:
@@ -87,6 +87,10 @@ class ExtractRecord(object):
             self.concerned_theme = []
         if not_concerned_theme:
             self.not_concerned_theme = not_concerned_theme
+        else:
+            self.not_concerned_theme = []
+        if not_concerned_themes_plrs:
+            self.not_concerned_themes_plrs = not_concerned_themes_plrs
         else:
             self.not_concerned_theme = []
         if theme_without_data:

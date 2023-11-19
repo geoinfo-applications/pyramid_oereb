@@ -15,7 +15,7 @@ class EmptyPlrRecord(object):
         has_data (bool): True if the topic contains data.
     """
 
-    def __init__(self, theme, has_data=True):
+    def __init__(self, theme, has_data=True, sub_theme=None):
         """
         Record for empty topics.
 
@@ -24,6 +24,7 @@ class EmptyPlrRecord(object):
             has_data (bool): True if the topic contains data.
         """
         self.theme = theme
+        self.sub_theme = sub_theme
         self.has_data = has_data
 
 

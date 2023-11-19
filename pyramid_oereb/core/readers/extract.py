@@ -76,6 +76,7 @@ class ExtractReader(object):
 
         concerned_themes = list()
         not_concerned_themes = list()
+        not_concerned_themes_plrs = list()
         themes_without_data = list()
 
         if municipality.published:
@@ -96,6 +97,7 @@ class ExtractReader(object):
                     elif isinstance(plr, EmptyPlrRecord):
                         if plr.has_data:
                             not_concerned_themes.append(plr.theme)
+                            not_concerned_themes_plrs.append(plr)
                         else:
                             themes_without_data.append(plr.theme)
 
@@ -140,6 +142,7 @@ class ExtractReader(object):
             update_date_os,
             concerned_theme=concerned_themes,
             not_concerned_theme=not_concerned_themes,
+            not_concerned_themes_plrs=not_concerned_themes_plrs,
             theme_without_data=themes_without_data,
             general_information=general_information,
             qr_code=qr_code_image,
