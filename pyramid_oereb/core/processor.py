@@ -130,8 +130,10 @@ class Processor(object):
                           .format(new_not_concerned_theme)
                           )
                 extract.not_concerned_theme.append(new_not_concerned_theme)
+                extract.not_concerned_sub_themes.append({ 'extract_index': new_not_concerned_theme.extract_index, 'sub_theme': None })
             # Need to reorder, because order must stay exactly as defined in configuration
             extract.not_concerned_theme = sorted(extract.not_concerned_theme, key=attrgetter('extract_index'))
+            extract.not_concerned_sub_themes = sorted(extract.not_concerned_sub_themes, key=lambda not_concerned_sub_theme: not_concerned_sub_theme['extract_index'])
 
         real_estate.public_law_restrictions = self.get_legend_entries(inside_plrs, outside_plrs)
         return extract
