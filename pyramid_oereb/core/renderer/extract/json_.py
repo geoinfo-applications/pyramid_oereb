@@ -93,7 +93,7 @@ class Renderer(Base):
             'PLRCadastreAuthority': self.format_office(extract.plr_cadastre_authority),
             'RealEstate': self.format_real_estate(extract.real_estate),
             'ConcernedTheme': [self.format_theme(theme) for theme in extract.concerned_theme],
-            'NotConcernedTheme': [self.format_theme(theme, plr.sub_theme, True) for theme, plr in zip(extract.not_concerned_theme, extract.not_concerned_themes_plrs)],
+            'NotConcernedTheme': [self.format_theme(theme, rec['sub_theme'], True) for theme, rec in zip(extract.not_concerned_theme, extract.not_concerned_sub_themes)],
             'ThemeWithoutData': [self.format_theme(theme) for theme in extract.theme_without_data]
         }
 
