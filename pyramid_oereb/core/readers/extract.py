@@ -75,6 +75,7 @@ class ExtractReader(object):
         bbox = box(bbox[0], bbox[1], bbox[2], bbox[3])
 
         concerned_themes = list()
+        concerned_sub_themes = list()
         not_concerned_themes = list()
         not_concerned_sub_themes = list()
         themes_without_data = list()
@@ -87,17 +88,25 @@ class ExtractReader(object):
 
                     real_estate.public_law_restrictions.extend(plr_source.records)
 
-            for plr in real_estate.public_law_restrictions:
+            for index, plr in enumerate(real_estate.public_law_restrictions):
 
                 # Filter topics due to topics parameter
                 if not params.skip_topic(plr.theme.code):
                     if isinstance(plr, PlrRecord):
-                        if plr.theme.code not in [theme.code for theme in concerned_themes]:
+                        sub_theme_not_in = plr.sub_theme is not None and plr.sub_theme.sub_code not in [rec['sub_theme'].sub_code for rec in concerned_sub_themes if rec['sub_theme'] is not None]
+                        if plr.theme.code not in [theme.code for theme in concerned_themes] or sub_theme_not_in:
                             concerned_themes.append(plr.theme)
+                            if plr.sub_theme is not None:
+                                concerned_sub_themes.append({ 'extract_index': plr.sub_theme.extract_index, 'sub_theme': plr.sub_theme })
+                            else:
+                                concerned_sub_themes.append({ 'extract_index': float(str(plr.theme.extract_index) + "." + str(index)[::-1]), 'sub_theme': None })
                     elif isinstance(plr, EmptyPlrRecord):
                         if plr.has_data:
                             not_concerned_themes.append(plr.theme)
-                            not_concerned_sub_themes.append({ 'extract_index': plr.theme.extract_index, 'sub_theme': plr.sub_theme })
+                            if plr.sub_theme is not None:
+                                not_concerned_sub_themes.append({ 'extract_index': plr.sub_theme.extract_index, 'sub_theme': plr.sub_theme })
+                            else:
+                                not_concerned_sub_themes.append({ 'extract_index': float(str(plr.theme.extract_index) + "." + str(index)[::-1]), 'sub_theme': None })
                         else:
                             themes_without_data.append(plr.theme)
 
@@ -107,6 +116,7 @@ class ExtractReader(object):
 
         # sort theme lists
         concerned_themes.sort(key=attrgetter('extract_index'))
+        concerned_sub_themes.sort(key=lambda concerned_sub_theme: concerned_sub_theme['extract_index'])
         not_concerned_themes.sort(key=attrgetter('extract_index'))
         not_concerned_sub_themes.sort(key=lambda not_concerned_sub_theme: not_concerned_sub_theme['extract_index'])
         themes_without_data.sort(key=attrgetter('extract_index'))
@@ -142,6 +152,7 @@ class ExtractReader(object):
             self.plr_cadastre_authority,
             update_date_os,
             concerned_theme=concerned_themes,
+            concerned_sub_themes=concerned_sub_themes,
             not_concerned_theme=not_concerned_themes,
             not_concerned_sub_themes=not_concerned_sub_themes,
             theme_without_data=themes_without_data,
