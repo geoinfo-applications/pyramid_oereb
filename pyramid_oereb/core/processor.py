@@ -110,16 +110,18 @@ class Processor(object):
                     outside_plrs.append(public_law_restriction)
 
         # Check if theme is concerned
-        def is_inside_plr(theme_code):
+        def is_inside_plr(theme_code, sub_theme_code=None):
             for plr in inside_plrs:
-                if plr.theme.code == theme_code:
+                sub_theme_match = plr.sub_theme.sub_code == sub_theme_code if sub_theme_code is not None and plr.sub_theme is not None else True
+                if plr.theme.code == theme_code and sub_theme_match:
                     return True
             return False
 
         # Ensure only ConcernedThemes are contained in PLRs
         themes_to_move = []
-        for i, theme in enumerate(extract.concerned_theme):
-            if not is_inside_plr(theme.code):
+        for i, (theme, rec) in enumerate(zip(extract.concerned_theme, extract.concerned_sub_themes)):
+            sub_theme_code = rec['sub_theme'].sub_code if not rec['sub_theme'] is None else None
+            if not is_inside_plr(theme.code, sub_theme_code):
                 themes_to_move.append(i)
 
         if len(themes_to_move) > 0:
