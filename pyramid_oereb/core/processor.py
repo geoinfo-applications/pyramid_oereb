@@ -126,11 +126,12 @@ class Processor(object):
             themes_to_move.reverse()
             for idx in themes_to_move:
                 new_not_concerned_theme = extract.concerned_theme.pop(idx)
-                log.debug("plr_tolerance_check() moving from concerned_theme to not_concerned_theme: {}"
-                          .format(new_not_concerned_theme)
+                new_not_concerned_sub_theme = extract.concerned_sub_themes.pop(idx)
+                log.debug("plr_tolerance_check() moving from concerned_theme to not_concerned_theme: {} - {}"
+                          .format(new_not_concerned_theme, new_not_concerned_sub_theme)
                           )
                 extract.not_concerned_theme.append(new_not_concerned_theme)
-                extract.not_concerned_sub_themes.append({ 'extract_index': new_not_concerned_theme.extract_index, 'sub_theme': None })
+                extract.not_concerned_sub_themes.append(new_not_concerned_sub_theme)
             # Need to reorder, because order must stay exactly as defined in configuration
             extract.not_concerned_theme = sorted(extract.not_concerned_theme, key=attrgetter('extract_index'))
             extract.not_concerned_sub_themes = sorted(extract.not_concerned_sub_themes, key=lambda not_concerned_sub_theme: not_concerned_sub_theme['extract_index'])
