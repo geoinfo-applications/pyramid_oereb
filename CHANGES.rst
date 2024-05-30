@@ -1,6 +1,28 @@
 Changelog
 =========
 
+2.5.0
+-----
+- Use ST_DWithin instead of ST_Distance for performance reasons (#1930)
+- Library upgrades (SQLAlchemy, geoalchemy2, urllib3, pypdf)
+
+2.4.8
+-----
+- Support new Oereblex API version (via geolink-formatter 2.0.5)
+- Enhance test coverage (#1904)
+- Library upgrades (SQLAlchemy, lxml, jsonschema, c2cwsgiutils, pillow, pytest)
+- Fix database setup scripts (#1913, #1914)
+- Fix deprecation (#1915)
+
+2.4.7
+-----
+- Add extract_index to disclaimer and general infomation (#1753)
+- Interlis bug fix (#1881)
+- Library upgrades (geoalchemy2, SQLAlchemy, jsonschema, lxml, responses, urllib3, pypdf)
+- Test coverage improvements
+- Python 3.8 is no longer explicitly supported
+- Remove print proxy xml2pdf, no longer used by the community (#1889)
+
 2.4.6
 -----
 - Fix error with large of contents and new pdf library (#1813)

@@ -6,6 +6,33 @@ Changes/Hints for migration
 This chapter will give you hints on how to handle version migration, in particular regarding what you may need
 to adapt in your project configuration, database etc. when upgrading to a new version.
 
+Version 2.5.0
+-------------
+Performance optimization release:
+
+* Use ST_DWithin instead of ST_Distance for performance reasons (#1930)
+* Library upgrades (SQLAlchemy, geoalchemy2, urllib3, pypdf)
+
+Version 2.4.8
+-------------
+Maintenance release:
+
+* Support new Oereblex API version (via geolink-formatter 2.0.5)
+* Enhance test coverage (#1904)
+* Library upgrades (SQLAlchemy, lxml, jsonschema, c2cwsgiutils, pillow, pytest)
+* Fix database setup scripts (#1913, #1914)
+* Fix deprecation (#1915)
+
+Version 2.4.7
+-------------
+Bug-fix and maintenance release:
+
+* Interlis bug fix (#1881)
+* Library upgrades (geoalchemy2, SQLAlchemy, jsonschema, lxml, responses, urllib3, pypdf)
+* Test coverage improvements
+* Python 3.8 is no longer explicitly supported
+* Remove print proxy xml2pdf, no longer used by the community (#1889)
+
 Version 2.4.6
 -------------
 Bug-fix and maintenance release:

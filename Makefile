@@ -47,7 +47,6 @@ DEV_CREATE_OEREBLEX_TABLES_SCRIPT = $(VENV_BIN)/create_oereblex_tables
 
 MODEL_PK_TYPE_IS_STRING ?= true
 
-PRINT_BACKEND = MapFishPrint # Set to XML2PDF if preferred
 PRINT_URL ?= http://oereb-print:8080/print/oereb
 
 # ********************
@@ -65,9 +64,10 @@ ${VENV_ROOT}/timestamp:
 	python3 -m venv ${VENV_ROOT}
 	touch $@
 
-${VENV_ROOT}/requirements-timestamp: ${VENV_ROOT}/timestamp setup.py requirements.txt tests-requirements.txt dev-requirements.txt
+${VENV_ROOT}/requirements-timestamp: ${VENV_ROOT}/timestamp pyproject.toml
 	$(VENV_BIN)/$(PIP_COMMAND) install --upgrade pip wheel
-	$(VENV_BIN)/$(PIP_COMMAND) install -r requirements.txt -r tests-requirements.txt -r dev-requirements.txt
+	$(VENV_BIN)/$(PIP_COMMAND) install .[recommend] .[testing] .[dev]
+	$(VENV_BIN)/$(PIP_COMMAND) install --editable .
 	touch $@
 
 ##########
@@ -145,7 +145,7 @@ compare_files_%:
 
 COMPARE_ALL_JSONS = $(foreach prefix, $(JSON_PREFIXES), compare_files_$(prefix).json)
 
-.PHONY: check_fed_data 
+.PHONY: check_fed_data
 check_fed_data: clean_fed_data prepare_fed_data $(COMPARE_ALL_JSONS)
 
 
@@ -207,7 +207,7 @@ BUILD_DEPS += ${VENV_ROOT}/requirements-timestamp
 # ***********************
 
 $(DEV_CONFIGURATION_YML): ${VENV_ROOT}/requirements-timestamp $(DEV_CREATE_STANDARD_YML_SCRIPT)
-	$(DEV_CREATE_STANDARD_YML_SCRIPT) --name $@ --database $(SQLALCHEMY_URL) --print_backend $(PRINT_BACKEND) --print_url $(PRINT_URL)
+	$(DEV_CREATE_STANDARD_YML_SCRIPT) --name $@ --database $(SQLALCHEMY_URL) --print_url $(PRINT_URL)
 
 # *********************
 # END DEV-YAML creation
@@ -261,8 +261,7 @@ clean_dev_db_scripts:
 .PHONY: install
 install: ${VENV_ROOT}/requirements-timestamp
 
-$(DEV_CREATE_MAIN_TABLES_SCRIPT) $(DEV_CREATE_STANDARD_TABLES_SCRIPT) $(DEV_CREATE_OEREBLEX_TABLES_SCRIPT) $(DEV_CREATE_STANDARD_YML_SCRIPT): setup.py $(BUILD_DEPS)
-	$(VENV_BIN)/python $< develop
+$(DEV_CREATE_MAIN_TABLES_SCRIPT) $(DEV_CREATE_STANDARD_TABLES_SCRIPT) $(DEV_CREATE_OEREBLEX_TABLES_SCRIPT) $(DEV_CREATE_STANDARD_YML_SCRIPT): pyproject.toml $(BUILD_DEPS)
 
 development.ini: install
 	$(VENV_BIN)/mako-render --var pyramid_oereb_port=$(PYRAMID_OEREB_PORT) --var pyramid_stats_url=$(STATS_URL) development.ini.mako > development.ini
@@ -274,14 +273,20 @@ build: install $(DEV_CREATE_MAIN_TABLES_SCRIPT) $(DEV_CREATE_STANDARD_TABLES_SCR
 clean: clean_fed_data clean_dev_db_scripts
 	rm -f $(DEV_CONFIGURATION_YML)
 	rm -f coverage.core.xml
+	rm -f coverage.core_adapter.xml
 	rm -f coverage.contrib-data_sources-standard.xml
 	rm -f coverage.contrib-data_sources-interlis.xml
+	rm -f coverage.contrib-data_sources-oereblex.xml
+	rm -f coverage.contrib-data_sources-swisstopo.xml
 	rm -f coverage.contrib-print_proxy-mapfish_print.xml
 	rm -f coverage.contrib-stats.xml
+	rm -f .coverage
+	rm -rf tmp
 
 .PHONY: clean-all
 clean-all: clean
 	rm -rf ${VENV_ROOT}
+	rm -rf build
 	rm -f development.ini
 	rm -rf $(PACKAGE).egg-info
 
@@ -305,10 +310,14 @@ test-postgis:
 test-core: ${VENV_ROOT}/requirements-timestamp
 	$(VENV_BIN)/py.test -vv $(PYTEST_OPTS) --cov-config .coveragerc.core --cov $(PACKAGE)/core --cov-report=term-missing --cov-report=xml:coverage.core.xml tests/core
 
+.PHONY: test-core_adapter
+test-core_adapter: ${VENV_ROOT}/requirements-timestamp
+	$(VENV_BIN)/py.test -vv $(PYTEST_OPTS) --cov-config .coveragerc.core_adapter --cov $(PACKAGE)/core --cov-report=term-missing --cov-report=xml:coverage.core_adapter.xml tests/core_adapter
+
 .PHONY: test-contrib-print_proxy-mapfish_print
 test-contrib-print_proxy-mapfish_print: ${VENV_ROOT}/requirements-timestamp
+	mkdir ./tmp
 	$(VENV_BIN)/py.test -vv $(PYTEST_OPTS) --cov-config .coveragerc.contrib-print_proxy-mapfish_print --cov $(PACKAGE) --cov-report xml:coverage.contrib-print_proxy-mapfish_print.xml tests/contrib.print_proxy.mapfish_print
-	# $(VENV_BIN)/py.test -vv $(PYTEST_OPTS) --cov-config .coveragerc --cov $(PACKAGE) --cov-report term-missing:skip-covered tests/contrib.print_proxy.xml_2_pdf
 
 .PHONY: test-contrib-data_sources-standard
 test-contrib-data_sources-standard: ${VENV_ROOT}/requirements-timestamp
@@ -318,12 +327,20 @@ test-contrib-data_sources-standard: ${VENV_ROOT}/requirements-timestamp
 test-contrib-data_sources-interlis: ${VENV_ROOT}/requirements-timestamp
 	$(VENV_BIN)/py.test -vv $(PYTEST_OPTS) --cov-config .coveragerc.contrib-data_sources-interlis --cov $(PACKAGE)/contrib/data_sources/interlis_2_3 --cov-report=term-missing:skip-covered --cov-report=xml:coverage.contrib-data_sources-interlis.xml tests/contrib.data_sources.interlis_2_3
 
+.PHONY: test-contrib-data_sources-swisstopo
+test-contrib-data_sources-swisstopo: ${VENV_ROOT}/requirements-timestamp
+	$(VENV_BIN)/py.test -vv $(PYTEST_OPTS) --cov-config .coveragerc.contrib-data_sources-swisstopo --cov $(PACKAGE)/contrib/data_sources/swisstopo --cov-report=term-missing:skip-covered --cov-report=xml:coverage.contrib-data_sources-swisstopo.xml tests/contrib.data_sources.swisstopo
+
+.PHONY: test-contrib-data_sources-oereblex
+test-contrib-data_sources-oereblex: ${VENV_ROOT}/requirements-timestamp
+	$(VENV_BIN)/py.test -vv $(PYTEST_OPTS) --cov-config .coveragerc.contrib-data_sources-oereblex --cov $(PACKAGE)/contrib/data_sources/oereblex --cov-report=term-missing:skip-covered --cov-report=xml:coverage.contrib-data_sources-oereblex.xml tests/contrib.data_sources.oereblex
+
 .PHONY: test-contrib-stats
 test-contrib-stats: ${VENV_ROOT}/requirements-timestamp
 	$(VENV_BIN)/py.test -vv $(PYTEST_OPTS) --cov-config .coveragerc.contrib-stats --cov $(PACKAGE)/contrib/stats --cov-report=xml:coverage.contrib-stats.xml tests/contrib.stats
 
 .PHONY: tests
-tests: ${VENV_ROOT}/requirements-timestamp test-core test-contrib-print_proxy-mapfish_print test-contrib-data_sources-standard test-contrib-data_sources-interlis test-contrib-stats
+tests: ${VENV_ROOT}/requirements-timestamp test-core test-core_adapter test-contrib-print_proxy-mapfish_print test-contrib-data_sources-standard test-contrib-data_sources-interlis test-contrib-stats test-contrib-data_sources-swisstopo test-contrib-data_sources-oereblex
 
 .PHONY: docker-tests
 docker-tests:
