@@ -1,6 +1,53 @@
 Changelog
 =========
 
+Notes:
+------
+- This python package specifies the version numbers only of directly imported python packages. This approach may result in a build failure of older versions of the project if incompatibilities arise between imported packages over time. The build process of the master branch is regularly tested in an automatic process.
+
+Master
+------
+- Support of Oereblex API version 1.2.6 via geolink-formatter version 2.0.7 (#)
+
+2.5.6
+-----
+Feature and maintenance release:
+
+* Library upgrades (lxml, webtest, pyaml-env, geoalchemy2, flake8)
+* Update JamesIves/github-pages-deploy-action action
+* Improvements to the calculation of the number of pages of the table of contents (#2047)
+* New parameter 'page_break_difference' allows customization of calculation of toc length (#2047)
+* Initialization of pyramid_oereb processor at beginning of application start resulting in performance improvements (#2059)
+  Changes to the configuration (municipalities, themes, etc.) of pyramid_oereb only apply after application restart now.
+* Add workaround for failing test due to Python-version dependent numpy implementation (#2102)
+
+2.5.5
+-------------
+- Library upgrades (pillow, pytest, webtest, waitress, codecov/codecov-action, geoalchemy, JamesIves/github-pages-deploy-action, urllib3)
+- Reset Python Docker Tag to 3.12.5
+- Support Oereblex API version 1.2.5 via geolink-formatter 2.0.6 (#2081)
+
+2.5.4
+-----
+- New parameter default_toc_length to define a default table of content pages number (#2042)
+- Add timeout in address source (#2043)
+- Optimize legend entries retrieval (#2050)
+- Library upgrades (waitress, sqlalchemy, psycopg2, urllib3)
+
+2.5.3
+-----
+- Provide a general WMS verify certificate option
+- Library upgrade (shapely)
+
+2.5.2
+-----
+- Add configuration Option to check certificate for external WMS. Default setting: True
+- Library upgrades (shapely, geoalchemy2, sqlalchemy, lxml)
+
+2.5.1
+-----
+- Library upgrades (SQLAlchemy, shapely, geoalchemy2, responses, urllib3, lxml)
+
 2.5.0
 -----
 - Use ST_DWithin instead of ST_Distance for performance reasons (#1930)
@@ -16,7 +63,7 @@ Changelog
 
 2.4.7
 -----
-- Add extract_index to disclaimer and general infomation (#1753)
+- Add extract_index to disclaimer and general infomation (#1753). Note that this improvement requires an additional attribute "extract_index" in tables "general_information" and "disclaimer" of the main schema.
 - Interlis bug fix (#1881)
 - Library upgrades (geoalchemy2, SQLAlchemy, jsonschema, lxml, responses, urllib3, pypdf)
 - Test coverage improvements

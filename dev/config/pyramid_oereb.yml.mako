@@ -85,9 +85,22 @@ pyramid_oereb:
     # Will make an estimation of the total length of the Table of Content (TOC) and control that the page
     # numbering in the output pdf is consistent with TOC numbering. If it is known that the TOC is very long and
     # could run over more than one page, it is preferred to set this to true. The drawback is that it might need
-    # more time to generate the PDF. If set to false, it will assume that only one TOC page exists, and this can
-    # lead to wrong numbering in the TOC.
-    compute_toc_pages: true
+    # more time to generate the PDF. If set to false, the expected_toc_length setting below will be used. If it is
+    # not set it will assume that only one TOC page exists, and this can lead to wrong numbering in the TOC, which
+    # will be fixed by a second PDF extract call that has an impact on performance.
+    compute_toc_pages: false
+    # The calculation of the number of TOC pages is very detailed in pyramid_oereb. However, it is not complete,
+    # and page breaks occur slightly earlier in page than expected. With setting the value "page_break_difference"
+    # (default: 10px), the apparent (not the real) page height is reduced in order to account for this issue.
+    page_break_difference: 10
+    # In order to skip the computation of the estimated number of TOC pages which might return an erroneous result
+    # for your setting, you can specify a default for the number of TOC pages. For most of the cantons the number of
+    # TOC pages is pretty constant unless a real estate is concerned by none or a huge number of restrictions.
+    # In both cases (computing an estimate or setting a default for the number of TOC pages) the exact number of TOC
+    # pages is extracted from the created PDF and if it differs from the expected value the PDF is created a second
+    # time with the correct page numbers.
+    # Note that if "compute_toc_pages" is set true the "expected_toc_length" is not taken into account.
+    expected_toc_length: 2
     # Specify any additional URL parameters that the print shall use for WMS calls
     wms_url_params:
       TRANSPARENT: 'true'
@@ -171,7 +184,7 @@ pyramid_oereb:
     # OEREBlex host
     host: https://oereblex.sg.ch
     # geoLink schema version
-    version: 1.2.2
+    version: 1.2.6
     # Pass schema version in URL
     pass_version: true
     # Enable/disable XML validation
@@ -1408,6 +1421,10 @@ pyramid_oereb:
         - data_code: Hinweis
           transfer_code: Hinweis
           extract_code: Hint
+
+  # Option to check certificate for external WMS calls in standard and oereblex themes.
+  # Default and recommended setting: True
+  verify_certificate_wms: True
 
   # The error message returned if an error occurs when requesting a static extract
   # The content of the message is defined in the specification (document "Inhalt und Darstellung des statischen Auszugs")
