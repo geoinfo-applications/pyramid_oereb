@@ -42,7 +42,7 @@ class DatabaseOEREBlexSource(DatabaseSource):
         self._queried_geolinks = {}
 
     @staticmethod
-    def get_config_value_for_plr_code(url_param_config, plr_code):
+    def get_config_value_for_plr_code(url_param_config, plr_code, plr_sub_code):
         """
         Returns the appropriate configuration entry for a plr within a url_param_config section.
 
@@ -51,12 +51,23 @@ class DatabaseOEREBlexSource(DatabaseSource):
             plr_code (str): the plr code
         """
         for url_param_entry in url_param_config:
-            if url_param_entry['code'] == plr_code:
-                if 'url_param' in url_param_entry:
-                    return url_param_entry['url_param']
-                else:
-                    log.warning("Incorrect configuration: missing url_param for entry {}".format(plr_code))
-                    return None
+            # Check if sub_code exists in the entry
+            if 'sub_code' in url_param_entry:
+                # Both code and sub_code must match
+                if url_param_entry['code'] == plr_code and url_param_entry['sub_code'] == plr_sub_code:
+                    if 'url_param' in url_param_entry:
+                        return url_param_entry['url_param']
+                    else:
+                        log.warning("Incorrect configuration: missing url_param for entry with code {} and sub_code {}".format(plr_code, plr_sub_code))
+                        return None
+            else:
+                # Only code must match if sub_code is not present
+                if url_param_entry['code'] == plr_code:
+                    if 'url_param' in url_param_entry:
+                        return url_param_entry['url_param']
+                    else:
+                        log.warning("Incorrect configuration: missing url_param for entry with code {}".format(plr_code))
+                        return None
         return None
 
     def get_document_records(self, params, public_law_restriction_from_db):
@@ -70,8 +81,9 @@ class DatabaseOEREBlexSource(DatabaseSource):
         oereblex_params = None
         url_param_config = self._oereblex_source._url_param_config
         plr_code = self._plr_info.get('code')
+        plr_sub_code = self._plr_info.get('sub_code')
         if url_param_config:
-            oereblex_params = DatabaseOEREBlexSource.get_config_value_for_plr_code(url_param_config, plr_code)
+            oereblex_params = DatabaseOEREBlexSource.get_config_value_for_plr_code(url_param_config, plr_code, plr_sub_code)
         law_status = Config.get_law_status_by_data_code(
             plr_code,
             public_law_restriction_from_db.law_status
