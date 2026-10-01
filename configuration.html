@@ -1,0 +1,429 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Configuration &mdash; pyramid_oereb  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Changes/Hints for migration" href="changes.html" />
+    <link rel="prev" title="Makefile" href="makefile.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            pyramid_oereb
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation-dev.html">Installation for DEV’s</a></li>
+<li class="toctree-l1"><a class="reference internal" href="makefile.html">Makefile</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Configuration</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#create-the-inital-database-setup">Create the inital database setup</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#pyramid-oereb-standard-model">Pyramid_oereb Standard Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#interlis-2-3-oerebkrm-transfer-model">Interlis 2.3 OeREBKRM Transfer Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#oereblex-topic-model">OEREBlex Topic Model</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#add-additional-standard-topics">Add additional standard topics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#add-additional-interlis-topics">Add additional interlis topics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#add-an-oereblex-topic">Add an OEREBLex Topic</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#for-all-topics">For all topics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#adapt-existing-models">Adapt existing models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#create-custom-sources">Create custom sources</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="changes.html">Changes/Hints for migration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contrib/index.html">Contribution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="core/index.html">Core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">FAQ</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">pyramid_oereb</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Configuration</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="configuration">
+<span id="id1"></span><h1>Configuration<a class="headerlink" href="#configuration" title="Link to this heading">¶</a></h1>
+<p>You are looking at a highly configurable piece of software. To get a good understanding of the server it
+is recommended to read this part carefully.</p>
+<p>The specifications of the oereb data model, the web services, the data extracts and the print layout
+by the Swiss Confederation are very precise <a class="reference external" href="https://www.cadastre.ch/de/manual-oereb/publication/instruction.html">OEREB specifications</a> . Code development was guided
+by the exact implementation of the specifications and the user requirements. Using this pyramid plugin,
+you will get a running server providing all the services defined by the federal specifications.
+The binding of cantonal and federal data to the server is done by the configuration options.</p>
+<p>This section describes the different possibilities to adapt the application to work with various data structures or
+even custom data sources. If you are planning to implement such modifications, we suggest to check all possible
+solutions first, as the necessary effort can vary significantly depending on your specific needs.</p>
+<section id="create-the-inital-database-setup">
+<span id="configuration-initial-setup"></span><h2>Create the inital database setup<a class="headerlink" href="#create-the-inital-database-setup" title="Link to this heading">¶</a></h2>
+<p>Out of the box the pyramid_oereb server supports three different topic configurations in the database:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>the <strong>pyramid_oereb standard model</strong></p></li>
+<li><p>the <strong>interlis 2.3 OeREBKRM transfer model</strong></p></li>
+<li><p>the <strong>OEREBlex model</strong></p></li>
+</ul>
+</div></blockquote>
+<section id="pyramid-oereb-standard-model">
+<h3>Pyramid_oereb Standard Model<a class="headerlink" href="#pyramid-oereb-standard-model" title="Link to this heading">¶</a></h3>
+<p>This schema and table structure is based on the initial topic structure used in the pyramid_oereb
+v1.x versions. It’s mainly used for cantonal topics which are not (yet) stored in the interlis 2.3 OeREBKRM-
+Transfer structure and by cantons that do not use OeREB-Lex to manage the legal documents.</p>
+</section>
+<section id="interlis-2-3-oerebkrm-transfer-model">
+<h3>Interlis 2.3 OeREBKRM Transfer Model<a class="headerlink" href="#interlis-2-3-oerebkrm-transfer-model" title="Link to this heading">¶</a></h3>
+<p>All the federal data sets are provided in this data structure. So this is the schema and table model you
+want to use for all the federal topics unless you want to transform the data to a specific database structure.
+If your cantonal data is also stored based on this model, then you probably want to use this structure
+for all topics to homogenize your database content.
+The <a class="reference external" href="https://github.com/openoereb/ili2pg_oereb_data_import_manual">Ili2pg Oereb Data Import Manual</a>
+explains how to use the ili2pg tool to create the corresponding schema and how to import the XML data.</p>
+</section>
+<section id="oereblex-topic-model">
+<h3>OEREBlex Topic Model<a class="headerlink" href="#oereblex-topic-model" title="Link to this heading">¶</a></h3>
+<p>This third model is usefull if you maintain your legal documents using the OEREBlex application and you
+have a specific cantonal model for your data. It is similar to the pyramid_oereb standard model, but all
+the document related tables are omitted. Instead the documents are linked by the geolink attribute.</p>
+</section>
+</section>
+<section id="add-additional-standard-topics">
+<span id="configuration-additional-topics"></span><h2>Add additional standard topics<a class="headerlink" href="#add-additional-standard-topics" title="Link to this heading">¶</a></h2>
+<p>If you like to add one or more additional topics based on the <em>pyramid_oereb standard</em> database structure
+you can use the internal command below creating an SQL script to establish the topic schema.</p>
+<p>But before creating any new topic structure you have to add its configuration. Open the configuration file
+(pyramid_oereb.yml) and copy the section from one of the existing <strong>standard</strong> topics which usually
+looks like this:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">code</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ch.NE.Baulinien</span>
+<span class="w">  </span><span class="nt">geometry_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">LINESTRING</span>
+<span class="w">  </span><span class="nt">thresholds</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">length</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">limit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.0</span>
+<span class="w">    </span><span class="nt">area</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">limit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.0</span>
+<span class="w">  </span><span class="nt">language</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fr</span>
+<span class="w">  </span><span class="nt">federal</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">  </span><span class="nt">view_service</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">layer_index</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<span class="w">    </span><span class="nt">layer_opacity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.75</span>
+<span class="w">  </span><span class="nt">source</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">class</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pyramid_oereb.contrib.data_sources.standard.sources.plr.DatabaseSource</span>
+<span class="w">    </span><span class="nt">params</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">db_connection</span><span class="p">:</span><span class="w"> </span><span class="nv">*main_db_connection</span>
+<span class="w">      </span><span class="c1"># model_factory: pyramid_oereb.contrib.data_sources.standard.models.theme.model_factory_integer_pk</span>
+<span class="w">      </span><span class="c1"># uncomment line above and comment line below to use integer type for primary keys</span>
+<span class="w">      </span><span class="nt">model_factory</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pyramid_oereb.contrib.data_sources.standard.models.theme.model_factory_string_pk</span>
+<span class="w">      </span><span class="nt">schema_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">road_building_lines</span>
+<span class="w">  </span><span class="nt">hooks</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">get_symbol</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pyramid_oereb.contrib.data_sources.standard.hook_methods.get_symbol</span>
+<span class="w">    </span><span class="nt">get_symbol_ref</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pyramid_oereb.core.hook_methods.get_symbol_ref</span>
+<span class="w">  </span><span class="nt">law_status_lookup</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">data_code</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">inKraft</span>
+<span class="w">      </span><span class="nt">transfer_code</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">inKraft</span>
+<span class="w">      </span><span class="nt">extract_code</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">inForce</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">data_code</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">AenderungMitVorwirkung</span>
+<span class="w">      </span><span class="nt">transfer_code</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">AenderungMitVorwirkung</span>
+<span class="w">      </span><span class="nt">extract_code</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">changeWithPreEffect</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">data_code</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">AenderungOhneVorwirkung</span>
+<span class="w">      </span><span class="nt">transfer_code</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">AenderungOhneVorwirkung</span>
+<span class="w">      </span><span class="nt">extract_code</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">changeWithoutPreEffect</span>
+<span class="w">  </span><span class="nt">document_types_lookup</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">data_code</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">LegalProvision</span>
+<span class="w">      </span><span class="nt">transfer_code</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Rechtsvorschrift</span>
+<span class="w">      </span><span class="nt">extract_code</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">LegalProvision</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">data_code</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Law</span>
+<span class="w">      </span><span class="nt">transfer_code</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">GesetzlicheGrundlage</span>
+<span class="w">      </span><span class="nt">extract_code</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Law</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">data_code</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Hint</span>
+<span class="w">      </span><span class="nt">transfer_code</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Hinweis</span>
+<span class="w">      </span><span class="nt">extract_code</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Hint</span>
+</pre></div>
+</div>
+<p>Apply the necessary modifications/replacements for the new topic. This should at least be the schema name,
+code, geometry type and of course the models property within the source parameters:
+Make sure that this source class is <cite>pyramid_oereb.contrib.data_sources.*standard*.sources.plr.DatabaseSource</cite>
+and not interlis_2_3. - The same goes for the model_factory and the get_symbol element. It should be set to
+<em>standard</em>.</p>
+<p>Also set the language of the data and if it’s a federal (true) or cantonal topic (false). You also want to
+define what lookup codes are for the law_status and document types.</p>
+<p>Once the configuration set, run the following command:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>create_standard_tables<span class="w"> </span>-c<span class="w"> </span>&lt;YOUR_YAML_CONFIGURATION&gt;<span class="w"> </span>-T<span class="w"> </span><span class="o">[</span>flag<span class="w"> </span>used<span class="w"> </span>to<span class="w"> </span>skip<span class="w"> </span>schema<span class="w"> </span>creation<span class="o">]</span>
+<span class="w"> </span>--sql-file<span class="o">=</span>&lt;PATH_AND_SQL_SCRIPTNAME&gt;<span class="w"> </span>-w<span class="w"> </span><span class="o">[</span>to<span class="w"> </span>over-write<span class="w"> </span>existing<span class="w"> </span>sql<span class="w"> </span>instead<span class="w"> </span>of<span class="w"> </span>append<span class="o">]</span>
+</pre></div>
+</div>
+<p>The first parameter <code class="docutils literal notranslate"><span class="pre">-c</span> <span class="pre">or</span> <span class="pre">--configuration=YAML</span></code> is the path to your YAML configuration file.
+By default it’s <em>pyramid_oereb.yml</em></p>
+<p>The second optional parameter <code class="docutils literal notranslate"><span class="pre">-s</span> <span class="pre">or</span> <span class="pre">--section=SECTION</span></code> allows you to specify the section containing
+the configuration part to use. Default is <em>pyramid_oereb</em>.</p>
+<p>The parameter <code class="docutils literal notranslate"><span class="pre">-T</span> <span class="pre">or</span> <span class="pre">--tables-only</span></code> skips the schema creation and creates only the tables.</p>
+<p>The option <code class="docutils literal notranslate"><span class="pre">--sql-file=SQL_FILE</span></code> generates an SQL file containing the schema and table creation
+commands. <em>SQL_FILE</em> should be the name or the absolute path of the file. E.g: my_sql_script.sql</p>
+<p>If your yaml file uses the c2ctemplate style (starting with vars) you need to add the
+<code class="docutils literal notranslate"><span class="pre">--c2ctemplate-style</span></code> parameter.</p>
+<p>The option <code class="docutils literal notranslate"><span class="pre">-w</span> <span class="pre">or</span> <span class="pre">--over-write</span></code> allows you to overwrite an existing sql file. Default is append.</p>
+<p>Now you have set up an empty additional topic in your database and you can proceed with deploying
+your data into it.</p>
+</section>
+<section id="add-additional-interlis-topics">
+<h2>Add additional interlis topics<a class="headerlink" href="#add-additional-interlis-topics" title="Link to this heading">¶</a></h2>
+<p>Follow the <a class="reference external" href="https://github.com/openoereb/ili2pg_oereb_data_import_manual">Ili2pg Oereb Data Import Manual</a>
+to create a new topic schema based on the OeREBKRM Transfer model and about how to import the XML data.</p>
+<p>Once the schema is created do not forget to add the corresponding topic configuration in the <em>pyramid_oereb.yml</em></p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">code</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ch.BaulinienNationalstrassen</span>
+<span class="w">  </span><span class="nt">geometry_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">LINESTRING</span>
+<span class="w">  </span><span class="nt">thresholds</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">length</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">limit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.0</span>
+<span class="w">      </span><span class="nt">unit</span><span class="p">:</span><span class="w"> </span><span class="s">'m'</span>
+<span class="w">      </span><span class="nt">precision</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
+<span class="w">    </span><span class="nt">area</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">limit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.0</span>
+<span class="w">      </span><span class="nt">unit</span><span class="p">:</span><span class="w"> </span><span class="s">'m²'</span>
+<span class="w">      </span><span class="nt">precision</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
+<span class="w">    </span><span class="nt">percentage</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">precision</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<span class="w">  </span><span class="nt">language</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">de</span>
+<span class="w">  </span><span class="nt">federal</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">  </span><span class="nt">view_service</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">layer_index</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<span class="w">    </span><span class="nt">layer_opacity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.75</span>
+<span class="w">  </span><span class="nt">source</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">class</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pyramid_oereb.contrib.data_sources.interlis_2_3.sources.plr.DatabaseSource</span>
+<span class="w">    </span><span class="nt">params</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">db_connection</span><span class="p">:</span><span class="w"> </span><span class="nv">*main_db_connection</span>
+<span class="w">      </span><span class="c1"># model_factory: pyramid_oereb.contrib.data_sources.standard.models.theme.model_factory_integer_pk</span>
+<span class="w">      </span><span class="c1"># uncomment line above and comment line below to use integer type for primary keys</span>
+<span class="w">      </span><span class="nt">model_factory</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pyramid_oereb.contrib.data_sources.interlis_2_3.models.theme.model_factory_integer_pk</span>
+<span class="w">      </span><span class="nt">schema_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">motorways_building_lines</span>
+<span class="w">  </span><span class="nt">hooks</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">get_symbol</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pyramid_oereb.contrib.data_sources.interlis_2_3.hook_methods.get_symbol</span>
+<span class="w">    </span><span class="nt">get_symbol_ref</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pyramid_oereb.core.hook_methods.get_symbol_ref</span>
+<span class="w">  </span><span class="nt">law_status_lookup</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">data_code</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">inKraft</span>
+<span class="w">      </span><span class="nt">transfer_code</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">inKraft</span>
+<span class="w">      </span><span class="nt">extract_code</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">inForce</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">data_code</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">AenderungMitVorwirkung</span>
+<span class="w">      </span><span class="nt">transfer_code</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">AenderungMitVorwirkung</span>
+<span class="w">      </span><span class="nt">extract_code</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">changeWithPreEffect</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">data_code</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">AenderungOhneVorwirkung</span>
+<span class="w">      </span><span class="nt">transfer_code</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">AenderungOhneVorwirkung</span>
+<span class="w">      </span><span class="nt">extract_code</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">changeWithoutPreEffect</span>
+<span class="w">  </span><span class="nt">document_types_lookup</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">data_code</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Rechtsvorschrift</span>
+<span class="w">      </span><span class="nt">transfer_code</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Rechtsvorschrift</span>
+<span class="w">      </span><span class="nt">extract_code</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">LegalProvision</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">data_code</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">GesetzlicheGrundlage</span>
+<span class="w">      </span><span class="nt">transfer_code</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">GesetzlicheGrundlage</span>
+<span class="w">      </span><span class="nt">extract_code</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Law</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">data_code</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Hinweis</span>
+<span class="w">      </span><span class="nt">transfer_code</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Hinweis</span>
+<span class="w">      </span><span class="nt">extract_code</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Hint</span>
+</pre></div>
+</div>
+<p>Make sure to set the schema name to the one you defined using ili2pg, also set code, geometry type
+and of course the models property within the source parameters:
+Here the source class is <cite>pyramid_oereb.contrib.data_sources.*interlis_2_3*.sources.plr.DatabaseSource</cite>
+and not standard. - The same goes for the model_factory and the get_symbol element. It should be set to
+<em>interlis_2_3</em>.</p>
+<p>Also define the language of the data and if it’s a federal (true) or cantonal topic (false). You also want to
+define that it is <em>NOT</em> the standard structure (false) and what lookup codes are used for the law_status
+and document types.</p>
+</section>
+<section id="add-an-oereblex-topic">
+<h2>Add an OEREBLex Topic<a class="headerlink" href="#add-an-oereblex-topic" title="Link to this heading">¶</a></h2>
+<p>If you want to use the OEREBlex structure for a topic, you can proceed as described in the previous section,
+but using a different script to generate the required models.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>create_oereblex_tables<span class="w"> </span>-c<span class="w"> </span>&lt;YOUR_NEW_TOPIC_CODE&gt;<span class="w"> </span>-g<span class="w"> </span>&lt;GEOMETRY_TYPE&gt;<span class="w"> </span>-p<span class="w"> </span>&lt;TARGET_PATH&gt;<span class="w"> </span>-k<span class="w"> </span>TRUE
+</pre></div>
+</div>
+</section>
+<section id="for-all-topics">
+<h2>For all topics<a class="headerlink" href="#for-all-topics" title="Link to this heading">¶</a></h2>
+<p>Do not forget to add the availability information in the <em>pyramid_oereb_main.availability</em> table to activate (or not)
+the topic for a municipality.</p>
+</section>
+<section id="adapt-existing-models">
+<span id="configuration-adapt-models"></span><h2>Adapt existing models<a class="headerlink" href="#adapt-existing-models" title="Link to this heading">¶</a></h2>
+<p>Another option to modify the standard configuration, is to adapt the existing models to fit another database
+structure. This method is recommended if you are using an existing database supported by GeoAlchemy2 and
+already containing all the necessary data but in a different structure. In this case you should check, if it
+is possible to transform the data by extending the existing models with a mapping to fit your structure.</p>
+<p>The easiest example is a simple mapping of table and column names, if you use a different language. Using the
+possibilities of SQLAlchemy, you could extend the existing
+pyramid_oereb.core.models.motorways_building_lines.office
+<span class="xref std std-ref">api-pyramid_oereb-core-models-motorways_building_lines-office</span> like this:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pyramid_oereb.lib.standard.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">motorways_building_lines</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">Office</span><span class="p">(</span><span class="n">motorways_building_lines</span><span class="o">.</span><span class="n">Office</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    The bucket to fill in all the offices you need to reference from public law restriction,</span>
+<span class="sd">    document, geometry.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        id (int): The identifier. This is used in the database only and must not be set manually.</span>
+<span class="sd">            If you don't like it - don't care about.</span>
+<span class="sd">        name (dict): The multilingual name of the office.</span>
+<span class="sd">        office_at_web (str): A web accessible url to a presentation of this office.</span>
+<span class="sd">        uid (str): The uid of this office from https</span>
+<span class="sd">        line1 (str): The first address line for this office.</span>
+<span class="sd">        line2 (str): The second address line for this office.</span>
+<span class="sd">        street (str): The streets name of the offices address.</span>
+<span class="sd">        number (str): The number on street.</span>
+<span class="sd">        postal_code (int): The ZIP-code.</span>
+<span class="sd">        city (str): The name of the city.</span>
+<span class="sd">    """</span>
+    <span class="n">__table_args__</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'schema'</span><span class="p">:</span> <span class="s1">'baulinien_nationalstrassen'</span><span class="p">}</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s1">'amt'</span>
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s1">'oid'</span><span class="p">,</span> <span class="n">sa</span><span class="o">.</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">office_at_web</span> <span class="o">=</span> <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s1">'amt_im_web'</span><span class="p">,</span> <span class="n">sa</span><span class="o">.</span><span class="n">String</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">line1</span> <span class="o">=</span> <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s1">'zeile1'</span><span class="p">,</span> <span class="n">sa</span><span class="o">.</span><span class="n">String</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">line2</span> <span class="o">=</span> <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s1">'zeile2'</span><span class="p">,</span> <span class="n">sa</span><span class="o">.</span><span class="n">String</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">street</span> <span class="o">=</span> <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s1">'strasse'</span><span class="p">,</span> <span class="n">sa</span><span class="o">.</span><span class="n">String</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">number</span> <span class="o">=</span> <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s1">'hausnr'</span><span class="p">,</span> <span class="n">sa</span><span class="o">.</span><span class="n">String</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">postal_code</span> <span class="o">=</span> <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s1">'plz'</span><span class="p">,</span> <span class="n">sa</span><span class="o">.</span><span class="n">Integer</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">city</span> <span class="o">=</span> <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s1">'ort'</span><span class="p">,</span> <span class="n">sa</span><span class="o">.</span><span class="n">String</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="p">(</span><span class="o">...</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The only thing, you have to care about, if you want to stay using the standard sources, is to keep the class
+name, the names of the properties and their data types.</p>
+<p>After extending the models, do not forget to change the models module in the configuration of the topic’s
+source.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">plr88</span>
+<span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">code</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ch.BaulinienNationalstrassen</span>
+<span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">(...)</span>
+<span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">source</span><span class="p p-Indicator">:</span>
+<span class="w">      </span><span class="nt">class</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pyramid_oereb.lib.sources.plr.DatabaseSource</span>
+<span class="w">      </span><span class="nt">params</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">db_connection</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">postgresql://postgres:password@localhost:5432/pyramid_oereb</span>
+<span class="w">        </span><span class="nt">models</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my_application.models.motorways_building_lines</span>
+<span class="w">  </span><span class="w w-Error">  </span><span class="nt">get_symbol_method</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pyramid_oereb.standard.methods.get_symbol</span>
+</pre></div>
+</div>
+</section>
+<section id="create-custom-sources">
+<span id="configuration-create-sources"></span><h2>Create custom sources<a class="headerlink" href="#create-custom-sources" title="Link to this heading">¶</a></h2>
+<p>If the possibilities described above do not fit your needs, you can implement your own sources. This is the
+only possible way, if their are no existing sources available to access your data. For example, this could be
+the case, if you are trying to access a kind of file system or some other proprietary data source.</p>
+<p>As for the models, basically every source can be replaced using the configuration. In the configuration, every
+source is defined by a <cite>class</cite> property, pointing on the class that should be used to instantiate it, and a
+<cite>params</cite> property containing keyword arguments passed to its constructor.</p>
+<p>For example, the real estate source for the standard database is configured with two parameters, the database
+connection and the model class, which looks like the following.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">real_estate</span><span class="p">:</span>
+<span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">(...)</span>
+<span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">source</span><span class="p p-Indicator">:</span>
+<span class="w">    </span><span class="c1"># The source must have a class which represents the accessor to the source. In this case it</span>
+<span class="w">    </span><span class="c1"># is a source already implemented which reads data from a database.</span>
+<span class="w">    </span><span class="nt">class</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pyramid_oereb.lib.sources.real_estate.DatabaseSource</span>
+<span class="w">    </span><span class="c1"># The configured class accepts params which are also necessary to define</span>
+<span class="w">    </span><span class="nt">params</span><span class="p">:</span>
+<span class="w">      </span><span class="c1"># The connection path where the database can be found</span>
+<span class="w">      </span><span class="nt">db_connection</span><span class="p">:</span><span class="w"> </span><span class="s">"postgresql://postgres:password@localhost:5432/pyramid_oereb"</span>
+<span class="w">      </span><span class="c1"># The model which maps the real estate database table.</span>
+<span class="w">      </span><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pyramid_oereb.standard.models.main.RealEstate</span>
+</pre></div>
+</div>
+<p>You can use the base source and extend it to create your own customized source implementations. With the
+parameters passed as keyword arguments, you are free to pass as many arguments you need. There are only two
+restrictions on implementing a custom source:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p>The source has to implement the method <cite>read()</cite> with the arguments used in its base source. For
+example, your custom real estate source has to accept the arguments defined in
+<a class="reference internal" href="contrib/data_sources/standard/sources.html#api-pyramid-oereb-contrib-data-sources-standard-sources-real-estate-databasesource"><span class="std std-ref">Real_Estate</span></a>.</p></li>
+<li><p>The method <cite>read()</cite> has to add records of the corresponding type to the source’ records list. Every
+source has list property called <cite>records</cite>. In case of a real estate source, the method <cite>read()</cite> has to
+create one or more instances of the <a class="reference internal" href="core/records.html#api-pyramid-oereb-core-records-real-estate-realestaterecord"><span class="std std-ref">RealEstateRecord</span></a>
+and add them to this list.</p></li>
+</ol>
+</div></blockquote>
+<p>This way, you should be able to create sources for nearly every possible data source.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Implementing a custom source for public law restrictions, requires to create public law restriction
+records with all referenced records of other classes according to the <a class="reference external" href="https://www.cadastre.ch/content/cadastre-internet/de/manual-oereb/publication/publication.download/cadastre-internet/de/documents/oereb-weisungen/OEREB-Data-Extract_de.pdf">OEREB Data Extract</a> model (page 5).</p>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="makefile.html" class="btn btn-neutral float-left" title="Makefile" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="changes.html" class="btn btn-neutral float-right" title="Changes/Hints for migration" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2017-2022, openoereb community.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

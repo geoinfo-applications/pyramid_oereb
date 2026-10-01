@@ -1,0 +1,267 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyramid_oereb.core.records.image &mdash; pyramid_oereb  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            pyramid_oereb
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../installation-dev.html">Installation for DEV’s</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../makefile.html">Makefile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../configuration.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../changes.html">Changes/Hints for migration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../contrib/index.html">Contribution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../core/index.html">Core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../faq.html">FAQ</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">pyramid_oereb</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pyramid_oereb.core.records.image</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pyramid_oereb.core.records.image</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">filetype</span><span class="w"> </span><span class="kn">import</span> <span class="n">filetype</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyramid_oereb.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">b64</span>
+
+
+<div class="viewcode-block" id="ImageRecord">
+<a class="viewcode-back" href="../../../../core/records.html#pyramid_oereb.core.records.image.ImageRecord">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ImageRecord</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Attributes:</span>
+<span class="sd">        VALID_FILE_TYPES (list of str): list with valid image file type.</span>
+<span class="sd">        SVG_PATTERN (re): regex pattern for svg image file types.</span>
+<span class="sd">    """</span>
+
+    <span class="n">VALID_FILE_TYPES</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s1">'png'</span><span class="p">,</span>
+        <span class="s1">'svg'</span>
+    <span class="p">]</span>
+
+    <span class="n">SVG_PATTERN</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s1">'&lt;svg(.|\n)+&lt;\/svg&gt;'</span><span class="p">)</span>  <span class="c1"># type: re</span>
+
+<div class="viewcode-block" id="ImageRecord.__init__">
+<a class="viewcode-back" href="../../../../core/records.html#pyramid_oereb.core.records.image.ImageRecord.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">content</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        The record to hold the binary information of a image.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            content (binary): The binary information of this image as binary string.</span>
+<span class="sd">        """</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">content</span> <span class="o">=</span> <span class="n">content</span></div>
+
+
+<div class="viewcode-block" id="ImageRecord.encode">
+<a class="viewcode-back" href="../../../../core/records.html#pyramid_oereb.core.records.image.ImageRecord.encode">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">encode</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            str: The encoded image as a base64 encoded string..</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="n">b64</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">content</span><span class="p">)</span></div>
+
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_validate_filetype</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Checks for valid file type and returns extension and mime type.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            obj (str, bytes, bytearray or readable): Path to the file, a readable object or the file's content</span>
+<span class="sd">                as str, bytes or bytearray. See filetype documentation:</span>
+<span class="sd">                https://h2non.github.io/filetype.py/v1.0.0/filetype.m.html</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple: The file's extension and mime type.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            TypeError: Raised if type is invalid or could not be recognized.</span>
+<span class="sd">        """</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">ft</span> <span class="o">=</span> <span class="n">filetype</span><span class="o">.</span><span class="n">guess</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
+            <span class="n">ft</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># Check for SVG content if filetype.guess fails</span>
+        <span class="k">if</span> <span class="n">ft</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+
+            <span class="c1"># Test for readable object first</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">content</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+            <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+                <span class="c1"># Test for file path</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                        <span class="n">content</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+                <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                    <span class="c1"># Use input as content as last option</span>
+                    <span class="n">content</span> <span class="o">=</span> <span class="n">obj</span>
+
+            <span class="c1"># Convert to string</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="nb">bytearray</span><span class="p">):</span>
+                <span class="n">content</span> <span class="o">=</span> <span class="n">content</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">'utf-8'</span><span class="p">)</span>
+
+            <span class="c1"># Check for SVG content</span>
+            <span class="k">if</span> <span class="n">ImageRecord</span><span class="o">.</span><span class="n">SVG_PATTERN</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">content</span><span class="p">):</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="p">(</span><span class="s1">'svg'</span><span class="p">,</span> <span class="s1">'image/svg+xml'</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">'Unrecognized file type'</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="p">(</span><span class="n">ft</span><span class="o">.</span><span class="n">extension</span><span class="p">,</span> <span class="n">ft</span><span class="o">.</span><span class="n">mime</span><span class="p">)</span>
+
+        <span class="c1"># Check for extension in valid file types</span>
+        <span class="k">if</span> <span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ImageRecord</span><span class="o">.</span><span class="n">VALID_FILE_TYPES</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">'Invalid file type: </span><span class="si">{invalid}</span><span class="s1">. Valid types are: </span><span class="si">{valid}</span><span class="s1">.'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">invalid</span><span class="o">=</span><span class="n">ft</span><span class="o">.</span><span class="n">extension</span><span class="p">,</span>
+                <span class="n">valid</span><span class="o">=</span><span class="n">ImageRecord</span><span class="o">.</span><span class="n">VALID_FILE_TYPES</span>
+            <span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">result</span>
+
+<div class="viewcode-block" id="ImageRecord.get_extension">
+<a class="viewcode-back" href="../../../../core/records.html#pyramid_oereb.core.records.image.ImageRecord.get_extension">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_extension</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Checks for valid file type and returns its extension.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            obj (str, bytes, bytearray or readable): Path to the file, a readable object or the file's content</span>
+<span class="sd">                as str, bytes or bytearray. See filetype documentation:</span>
+<span class="sd">                https://h2non.github.io/filetype.py/v1.0.0/filetype.m.html</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: The file's extension.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="n">ImageRecord</span><span class="o">.</span><span class="n">_validate_filetype</span><span class="p">(</span><span class="n">obj</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="ImageRecord.get_mimetype">
+<a class="viewcode-back" href="../../../../core/records.html#pyramid_oereb.core.records.image.ImageRecord.get_mimetype">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_mimetype</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Checks for valid file type and returns its mime type.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            obj (str, bytes, bytearray or readable): Path to the file, a readable object or the file's content</span>
+<span class="sd">                as str, bytes or bytearray. See filetype documentation:</span>
+<span class="sd">                https://h2non.github.io/filetype.py/v1.0.0/filetype.m.html</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: The file's mime type.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="n">ImageRecord</span><span class="o">.</span><span class="n">_validate_filetype</span><span class="p">(</span><span class="n">obj</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span></div>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">mimetype</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Checks for valid file type and returns its extension.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: The file's extension.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="n">ImageRecord</span><span class="o">.</span><span class="n">get_mimetype</span><span class="p">(</span><span class="nb">bytearray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">content</span><span class="p">))</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">extension</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Checks for valid file type and returns its mime type.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: The file's mime type.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="n">ImageRecord</span><span class="o">.</span><span class="n">get_extension</span><span class="p">(</span><span class="nb">bytearray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">content</span><span class="p">))</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2017-2022, openoereb community.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

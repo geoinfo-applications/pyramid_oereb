@@ -1,0 +1,376 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Statistics &mdash; pyramid_oereb  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Core" href="../core/index.html" />
+    <link rel="prev" title="Mapfish Print" href="print_proxy/mapfish-print.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            pyramid_oereb
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation-dev.html">Installation for DEV’s</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../makefile.html">Makefile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../configuration.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changes.html">Changes/Hints for migration</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Contribution</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="contributing.html">Contributing to pyramid_oereb</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data_sources/index.html">Data Sources</a></li>
+<li class="toctree-l2"><a class="reference internal" href="print_proxy/index.html">Print Proxy</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Statistics</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#configuration">Configuration</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#db-connection-information">db connection information</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#blacklisting">Blacklisting</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#standard-reporting">Standard reporting</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#implementation">Implementation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#decorators-oerebstats"><em>Decorators OerebStats</em></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#pyramid_oereb.contrib.stats.decorators.OerebStats"><code class="docutils literal notranslate"><span class="pre">OerebStats</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../core/index.html">Core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faq.html">FAQ</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">pyramid_oereb</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Contribution</a></li>
+      <li class="breadcrumb-item active">Statistics</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="statistics">
+<span id="contrib-stats"></span><h1>Statistics<a class="headerlink" href="#statistics" title="Link to this heading">¶</a></h1>
+<p>The statistics functionality allows you to gather usage information within pyramid_oereb
+itself. The data gathered will be persisted in user defined configured database,
+allowing the operator or owner of the application to query at any time
+the usage statistics for that database.</p>
+<p>The database structure necessary to hold the data will automatically be generated upon
+first usage of the functionality. Once this structure has been generated, you may wish
+to define in addition standard reporting views, see <a class="reference internal" href="#standard-reporting"><span class="std std-ref">Standard reporting</span></a> for more information.</p>
+<section id="configuration">
+<h2>Configuration<a class="headerlink" href="#configuration" title="Link to this heading">¶</a></h2>
+<p>The functionality is configured via the server’s ini file; see the project repository for a
+complete example of such an ini file. Example of a configuration suitable for usage with Gunicorn:</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[loggers]</span>
+<span class="na">keys</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">root, json, gunicorn.error</span>
+
+<span class="k">[handlers]</span>
+<span class="na">keys</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">console, sqlalchemylogger</span>
+
+<span class="k">[logger_json]</span>
+<span class="na">level</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">INFO</span>
+<span class="na">handlers</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">console, sqlalchemylogger</span>
+<span class="na">qualname</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">JSON</span>
+<span class="na">propagate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0</span>
+
+<span class="k">[handler_sqlalchemylogger]</span>
+<span class="na">class</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">c2cwsgiutils.sqlalchemylogger.handlers.SQLAlchemyHandler</span>
+<span class="na">args = ({'url'</span><span class="o">:</span><span class="s">'postgresql://postgres:password@oereb-db:5432/oereb_stats'</span><span class="na">,'tablename'</span><span class="o">:</span><span class="s">'logs'</span><span class="na">,'tableargs': {'schema'</span><span class="o">:</span><span class="s">'oereb_logs'</span><span class="na">}},'healthcheck')</span>
+<span class="na">level</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">NOTSET</span>
+<span class="na">formatter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">generic</span>
+<span class="na">propagate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0</span>
+
+<span class="k">[logger_gunicorn.error]</span>
+<span class="na">level</span><span class="o">=</span><span class="s">ERROR</span>
+<span class="na">handlers</span><span class="o">=</span><span class="s">console</span>
+<span class="na">propagate</span><span class="o">=</span><span class="s">0</span>
+<span class="na">qualname</span><span class="o">=</span><span class="s">gunicorn.error</span>
+</pre></div>
+</div>
+<p><strong>args</strong> is a tuple containing two elements:</p>
+<ul class="simple">
+<li><p>a dictionary: the db connection information</p></li>
+<li><p>a string: the blacklist regex</p></li>
+</ul>
+<section id="db-connection-information">
+<h3>db connection information<a class="headerlink" href="#db-connection-information" title="Link to this heading">¶</a></h3>
+<p>The db connection information is a dictionary containing:</p>
+<ul class="simple">
+<li><p><em>url</em> (mandatory): a db connection string compatible with sqlalchemy. Currently only sqlite and postgresql are supported. If using Docker, the db connection information has to be supplied in a file named <em>.env</em> at the root of the project (see file <em>sample.env</em> for an example)</p></li>
+<li><p><em>tablename</em> (optional): if a special tablename has to be used within the database and will be mapped with <em>__tablename__</em> sqlalchemy class property</p></li>
+<li><p><em>tableargs</em> (optional): another usual sqlalchemy class property (<em>__tableargs__</em>). In the above example we use it mainly to set a particular schema</p></li>
+</ul>
+<p>The default values for the above optional arguments are:</p>
+<ul class="simple">
+<li><p>tablename = ‘logs’</p></li>
+<li><p>tableargs = None (i.e. it will create the table in the <em>public</em> schema of the DB)</p></li>
+</ul>
+<p>The sql logger source code with its documentation can be found here: <a class="reference external" href="https://github.com/camptocamp/c2cwsgiutils/tree/3.9.0/c2cwsgiutils/sqlalchemylogger">https://github.com/camptocamp/c2cwsgiutils/tree/3.9.0/c2cwsgiutils/sqlalchemylogger</a></p>
+</section>
+<section id="blacklisting">
+<h3>Blacklisting<a class="headerlink" href="#blacklisting" title="Link to this heading">¶</a></h3>
+<p>This is useful to avoid gathering statistics for non-relevant access logs, such as healthchecks.</p>
+<p>The blacklist regex is any string compatible with the python module <em>re</em>. It will be compiled and used to avoid writing in the DB the logs that
+match the given regex.  Please bear in mind that anything within the log that matches the
+regex will prevent the log to be written. It is therefore discouraged to use regexes based on url path, which could match also user traffic
+requests, which should be accounted in the statistics instead.</p>
+<p>For example if <em>user-agent</em> http header of an healthcheck is set to some particular string (e.g. ‘healthcheck’ like in the above example),
+then you should at least set ‘healtcheck’ explicitely and the logger will avoid writing any log containing the word healthcheck.</p>
+</section>
+</section>
+<section id="standard-reporting">
+<span id="id1"></span><h2>Standard reporting<a class="headerlink" href="#standard-reporting" title="Link to this heading">¶</a></h2>
+<p>To fulfill the most common needs for statistics reporting, we recommend the usage of database views
+based on the raw data table. You can create these views using the script <em>create_stats_tables</em>, or
+by creating the following views in your database manually, and adapting them if needed:</p>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="cm">/*GetVersions view*/</span>
+<span class="k">DROP</span><span class="w"> </span><span class="k">VIEW</span><span class="w"> </span><span class="k">IF</span><span class="w"> </span><span class="k">EXISTS</span><span class="w"> </span><span class="n">oereb_logs</span><span class="p">.</span><span class="n">stats_get_versions</span><span class="p">;</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">OR</span><span class="w"> </span><span class="k">REPLACE</span><span class="w"> </span><span class="k">VIEW</span><span class="w"> </span><span class="n">oereb_logs</span><span class="p">.</span><span class="n">stats_get_versions</span><span class="w"> </span><span class="k">AS</span>
+<span class="w">  </span><span class="k">SELECT</span><span class="w"> </span><span class="k">cast</span><span class="p">(</span><span class="n">msg</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">json</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'response'</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'extras'</span><span class="w"> </span><span class="o">-&gt;&gt;</span><span class="w"> </span><span class="s1">'service'</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">service</span><span class="w"> </span><span class="p">,</span>
+<span class="w">         </span><span class="k">cast</span><span class="p">(</span><span class="k">cast</span><span class="p">(</span><span class="n">msg</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">json</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'response'</span><span class="w"> </span><span class="o">-&gt;&gt;</span><span class="w"> </span><span class="s1">'status_code'</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="nb">INTEGER</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">status_code</span><span class="p">,</span>
+<span class="w">         </span><span class="k">cast</span><span class="p">(</span><span class="n">msg</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">json</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'response'</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'extras'</span><span class="w"> </span><span class="o">-&gt;&gt;</span><span class="w"> </span><span class="s1">'output_format'</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">output_format</span><span class="p">,</span>
+<span class="w">         </span><span class="n">created_at</span><span class="p">,</span>
+<span class="w">         </span><span class="k">cast</span><span class="p">(</span><span class="n">msg</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">json</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'request'</span><span class="w"> </span><span class="o">-&gt;&gt;</span><span class="w"> </span><span class="s1">'path'</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">path</span>
+<span class="w">  </span><span class="k">FROM</span><span class="w"> </span><span class="n">oereb_logs</span><span class="p">.</span><span class="n">logs</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">logger</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'JSON'</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="k">cast</span><span class="p">(</span><span class="n">msg</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">json</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'response'</span><span class="w"> </span><span class="o">-&gt;</span><span class="s1">'extras'</span><span class="w"> </span><span class="o">-&gt;&gt;</span><span class="w"> </span><span class="s1">'service'</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'GetVersions'</span><span class="p">;</span>
+<span class="cm">/*GetCapabilities view*/</span>
+<span class="k">DROP</span><span class="w"> </span><span class="k">VIEW</span><span class="w"> </span><span class="k">IF</span><span class="w"> </span><span class="k">EXISTS</span><span class="w"> </span><span class="n">oereb_logs</span><span class="p">.</span><span class="n">stats_get_capabilities</span><span class="p">;</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">OR</span><span class="w"> </span><span class="k">REPLACE</span><span class="w"> </span><span class="k">VIEW</span><span class="w"> </span><span class="n">oereb_logs</span><span class="p">.</span><span class="n">stats_get_capabilities</span><span class="w"> </span><span class="k">AS</span>
+<span class="w">  </span><span class="k">SELECT</span><span class="w"> </span><span class="k">cast</span><span class="p">(</span><span class="n">msg</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">json</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'response'</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'extras'</span><span class="w"> </span><span class="o">-&gt;&gt;</span><span class="w"> </span><span class="s1">'service'</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">service</span><span class="w"> </span><span class="p">,</span>
+<span class="w">         </span><span class="k">cast</span><span class="p">(</span><span class="k">cast</span><span class="p">(</span><span class="n">msg</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">json</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'response'</span><span class="w"> </span><span class="o">-&gt;&gt;</span><span class="w"> </span><span class="s1">'status_code'</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="nb">INTEGER</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">status_code</span><span class="p">,</span>
+<span class="w">         </span><span class="k">cast</span><span class="p">(</span><span class="n">msg</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">json</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'response'</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'extras'</span><span class="w"> </span><span class="o">-&gt;&gt;</span><span class="w"> </span><span class="s1">'output_format'</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">output_format</span><span class="p">,</span>
+<span class="w">         </span><span class="n">created_at</span><span class="p">,</span>
+<span class="w">         </span><span class="k">cast</span><span class="p">(</span><span class="n">msg</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">json</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'request'</span><span class="w"> </span><span class="o">-&gt;&gt;</span><span class="w"> </span><span class="s1">'path'</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">path</span>
+<span class="w">  </span><span class="k">FROM</span><span class="w"> </span><span class="n">oereb_logs</span><span class="p">.</span><span class="n">logs</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">logger</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'JSON'</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="k">cast</span><span class="p">(</span><span class="n">msg</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">json</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'response'</span><span class="w"> </span><span class="o">-&gt;</span><span class="s1">'extras'</span><span class="w"> </span><span class="o">-&gt;&gt;</span><span class="w"> </span><span class="s1">'service'</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'GetCapabilities'</span><span class="p">;</span>
+<span class="cm">/*GetEgridCoord view*/</span>
+<span class="k">DROP</span><span class="w"> </span><span class="k">VIEW</span><span class="w"> </span><span class="k">IF</span><span class="w"> </span><span class="k">EXISTS</span><span class="w"> </span><span class="n">oereb_logs</span><span class="p">.</span><span class="n">stats_get_egrid_coord</span><span class="p">;</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">OR</span><span class="w"> </span><span class="k">REPLACE</span><span class="w"> </span><span class="k">VIEW</span><span class="w"> </span><span class="n">oereb_logs</span><span class="p">.</span><span class="n">stats_get_egrid_coord</span><span class="w"> </span><span class="k">AS</span>
+<span class="w">  </span><span class="k">SELECT</span><span class="w"> </span><span class="k">cast</span><span class="p">(</span><span class="n">msg</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">json</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'response'</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'extras'</span><span class="w"> </span><span class="o">-&gt;&gt;</span><span class="w"> </span><span class="s1">'service'</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">service</span><span class="w"> </span><span class="p">,</span>
+<span class="w">         </span><span class="k">cast</span><span class="p">(</span><span class="k">cast</span><span class="p">(</span><span class="n">msg</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">json</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'response'</span><span class="w"> </span><span class="o">-&gt;&gt;</span><span class="w"> </span><span class="s1">'status_code'</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="nb">INTEGER</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">status_code</span><span class="p">,</span>
+<span class="w">         </span><span class="k">cast</span><span class="p">(</span><span class="n">msg</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">json</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'response'</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'extras'</span><span class="w"> </span><span class="o">-&gt;&gt;</span><span class="w"> </span><span class="s1">'output_format'</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">output_format</span><span class="p">,</span>
+<span class="w">         </span><span class="k">cast</span><span class="p">(</span><span class="n">msg</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">json</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'response'</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'extras'</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'params'</span><span class="w"> </span><span class="o">-&gt;&gt;</span><span class="w"> </span><span class="s1">'EN'</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">en</span><span class="p">,</span>
+<span class="w">         </span><span class="k">cast</span><span class="p">(</span><span class="n">msg</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">json</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'response'</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'extras'</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'params'</span><span class="w"> </span><span class="o">-&gt;&gt;</span><span class="w"> </span><span class="s1">'GNSS'</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">gnss</span><span class="p">,</span>
+<span class="w">         </span><span class="n">created_at</span><span class="p">,</span>
+<span class="w">         </span><span class="k">cast</span><span class="p">(</span><span class="n">msg</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">json</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'request'</span><span class="w"> </span><span class="o">-&gt;&gt;</span><span class="w"> </span><span class="s1">'path'</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">path</span>
+<span class="w">  </span><span class="k">FROM</span><span class="w"> </span><span class="n">oereb_logs</span><span class="p">.</span><span class="n">logs</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">logger</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'JSON'</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="k">cast</span><span class="p">(</span><span class="n">msg</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">json</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'response'</span><span class="w"> </span><span class="o">-&gt;</span><span class="s1">'extras'</span><span class="w"> </span><span class="o">-&gt;&gt;</span><span class="w"> </span><span class="s1">'service'</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'GetEgridCoord'</span><span class="p">;</span>
+<span class="cm">/*GetEgridIdent view*/</span>
+<span class="k">DROP</span><span class="w"> </span><span class="k">VIEW</span><span class="w"> </span><span class="k">IF</span><span class="w"> </span><span class="k">EXISTS</span><span class="w"> </span><span class="n">oereb_logs</span><span class="p">.</span><span class="n">stats_get_egrid_ident</span><span class="p">;</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">OR</span><span class="w"> </span><span class="k">REPLACE</span><span class="w"> </span><span class="k">VIEW</span><span class="w"> </span><span class="n">oereb_logs</span><span class="p">.</span><span class="n">stats_get_egrid_ident</span><span class="w"> </span><span class="k">AS</span>
+<span class="w">  </span><span class="k">SELECT</span><span class="w"> </span><span class="k">cast</span><span class="p">(</span><span class="n">msg</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">json</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'response'</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'extras'</span><span class="w"> </span><span class="o">-&gt;&gt;</span><span class="w"> </span><span class="s1">'service'</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">service</span><span class="w"> </span><span class="p">,</span>
+<span class="w">         </span><span class="k">cast</span><span class="p">(</span><span class="k">cast</span><span class="p">(</span><span class="n">msg</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">json</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'response'</span><span class="w"> </span><span class="o">-&gt;&gt;</span><span class="w"> </span><span class="s1">'status_code'</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="nb">INTEGER</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">status_code</span><span class="p">,</span>
+<span class="w">         </span><span class="k">cast</span><span class="p">(</span><span class="n">msg</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">json</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'response'</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'extras'</span><span class="w"> </span><span class="o">-&gt;&gt;</span><span class="w"> </span><span class="s1">'output_format'</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">output_format</span><span class="p">,</span>
+<span class="w">         </span><span class="k">cast</span><span class="p">(</span><span class="n">msg</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">json</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'response'</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'extras'</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'params'</span><span class="w"> </span><span class="o">-&gt;&gt;</span><span class="w"> </span><span class="s1">'IDENTDN'</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">identdn</span><span class="p">,</span>
+<span class="w">         </span><span class="k">cast</span><span class="p">(</span><span class="n">msg</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">json</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'response'</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'extras'</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'params'</span><span class="w"> </span><span class="o">-&gt;&gt;</span><span class="w"> </span><span class="s1">'NUMBER'</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="nb">number</span><span class="p">,</span>
+<span class="w">         </span><span class="n">created_at</span><span class="p">,</span>
+<span class="w">         </span><span class="k">cast</span><span class="p">(</span><span class="n">msg</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">json</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'request'</span><span class="w"> </span><span class="o">-&gt;&gt;</span><span class="w"> </span><span class="s1">'path'</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">path</span>
+<span class="w">  </span><span class="k">FROM</span><span class="w"> </span><span class="n">oereb_logs</span><span class="p">.</span><span class="n">logs</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">logger</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'JSON'</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="k">cast</span><span class="p">(</span><span class="n">msg</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">json</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'response'</span><span class="w"> </span><span class="o">-&gt;</span><span class="s1">'extras'</span><span class="w"> </span><span class="o">-&gt;&gt;</span><span class="w"> </span><span class="s1">'service'</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'GetEgridIdent'</span><span class="p">;</span>
+<span class="cm">/*GetEgridAddress view*/</span>
+<span class="k">DROP</span><span class="w"> </span><span class="k">VIEW</span><span class="w"> </span><span class="k">IF</span><span class="w"> </span><span class="k">EXISTS</span><span class="w"> </span><span class="n">oereb_logs</span><span class="p">.</span><span class="n">stats_get_egrid_address</span><span class="p">;</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">OR</span><span class="w"> </span><span class="k">REPLACE</span><span class="w"> </span><span class="k">VIEW</span><span class="w"> </span><span class="n">oereb_logs</span><span class="p">.</span><span class="n">stats_get_egrid_address</span><span class="w"> </span><span class="k">AS</span>
+<span class="w">  </span><span class="k">SELECT</span><span class="w"> </span><span class="k">cast</span><span class="p">(</span><span class="n">msg</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">json</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'response'</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'extras'</span><span class="w"> </span><span class="o">-&gt;&gt;</span><span class="w"> </span><span class="s1">'service'</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">service</span><span class="w"> </span><span class="p">,</span>
+<span class="w">         </span><span class="k">cast</span><span class="p">(</span><span class="k">cast</span><span class="p">(</span><span class="n">msg</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">json</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'response'</span><span class="w"> </span><span class="o">-&gt;&gt;</span><span class="w"> </span><span class="s1">'status_code'</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="nb">INTEGER</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">status_code</span><span class="p">,</span>
+<span class="w">         </span><span class="k">cast</span><span class="p">(</span><span class="n">msg</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">json</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'response'</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'extras'</span><span class="w"> </span><span class="o">-&gt;&gt;</span><span class="w"> </span><span class="s1">'output_format'</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">output_format</span><span class="p">,</span>
+<span class="w">         </span><span class="k">cast</span><span class="p">(</span><span class="n">msg</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">json</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'response'</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'extras'</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'params'</span><span class="w"> </span><span class="o">-&gt;&gt;</span><span class="w"> </span><span class="s1">'POSTALCODE'</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">postalcode</span><span class="p">,</span>
+<span class="w">         </span><span class="k">cast</span><span class="p">(</span><span class="n">msg</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">json</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'response'</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'extras'</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'params'</span><span class="w"> </span><span class="o">-&gt;&gt;</span><span class="w"> </span><span class="s1">'LOCALISATION'</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">localisation</span><span class="p">,</span>
+<span class="w">         </span><span class="k">cast</span><span class="p">(</span><span class="n">msg</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">json</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'response'</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'extras'</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'params'</span><span class="w"> </span><span class="o">-&gt;&gt;</span><span class="w"> </span><span class="s1">'NUMBER'</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="nb">number</span><span class="p">,</span>
+<span class="w">         </span><span class="n">created_at</span><span class="p">,</span>
+<span class="w">         </span><span class="k">cast</span><span class="p">(</span><span class="n">msg</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">json</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'request'</span><span class="w"> </span><span class="o">-&gt;&gt;</span><span class="w"> </span><span class="s1">'path'</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">path</span>
+<span class="w">  </span><span class="k">FROM</span><span class="w"> </span><span class="n">oereb_logs</span><span class="p">.</span><span class="n">logs</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">logger</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'JSON'</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="k">cast</span><span class="p">(</span><span class="n">msg</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">json</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'response'</span><span class="w"> </span><span class="o">-&gt;</span><span class="s1">'extras'</span><span class="w"> </span><span class="o">-&gt;&gt;</span><span class="w"> </span><span class="s1">'service'</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'GetEgridAddress'</span><span class="p">;</span>
+<span class="cm">/*GetExtractById view*/</span>
+<span class="k">DROP</span><span class="w"> </span><span class="k">VIEW</span><span class="w"> </span><span class="k">IF</span><span class="w"> </span><span class="k">EXISTS</span><span class="w"> </span><span class="n">oereb_logs</span><span class="p">.</span><span class="n">stats_get_extract_by_id</span><span class="w"> </span><span class="k">CASCADE</span><span class="p">;</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">OR</span><span class="w"> </span><span class="k">REPLACE</span><span class="w"> </span><span class="k">VIEW</span><span class="w"> </span><span class="n">oereb_logs</span><span class="p">.</span><span class="n">stats_get_extract_by_id</span><span class="w"> </span><span class="k">AS</span>
+<span class="w">  </span><span class="k">SELECT</span><span class="w"> </span><span class="k">cast</span><span class="p">(</span><span class="n">msg</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">json</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'response'</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'extras'</span><span class="w"> </span><span class="o">-&gt;&gt;</span><span class="w"> </span><span class="s1">'service'</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">service</span><span class="w"> </span><span class="p">,</span>
+<span class="w">         </span><span class="k">cast</span><span class="p">(</span><span class="k">cast</span><span class="p">(</span><span class="n">msg</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">json</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'response'</span><span class="w"> </span><span class="o">-&gt;&gt;</span><span class="w"> </span><span class="s1">'status_code'</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="nb">INTEGER</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">status_code</span><span class="p">,</span>
+<span class="w">         </span><span class="k">cast</span><span class="p">(</span><span class="n">msg</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">json</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'response'</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'extras'</span><span class="w"> </span><span class="o">-&gt;&gt;</span><span class="w"> </span><span class="s1">'output_format'</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">output_format</span><span class="p">,</span>
+<span class="w">         </span><span class="k">cast</span><span class="p">(</span><span class="n">msg</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">json</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'response'</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'extras'</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'params'</span><span class="w"> </span><span class="o">-&gt;&gt;</span><span class="w"> </span><span class="s1">'__flavour__'</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">flavour</span><span class="p">,</span>
+<span class="w">         </span><span class="k">cast</span><span class="p">(</span><span class="n">msg</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">json</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'response'</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'extras'</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'params'</span><span class="w"> </span><span class="o">-&gt;&gt;</span><span class="w"> </span><span class="s1">'__egrid__'</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">egrid</span><span class="p">,</span>
+<span class="w">         </span><span class="k">cast</span><span class="p">(</span><span class="n">msg</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">json</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'response'</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'extras'</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'params'</span><span class="w"> </span><span class="o">-&gt;&gt;</span><span class="w"> </span><span class="s1">'__identdn__'</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">identdn</span><span class="p">,</span>
+<span class="w">         </span><span class="k">cast</span><span class="p">(</span><span class="n">msg</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">json</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'response'</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'extras'</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'params'</span><span class="w"> </span><span class="o">-&gt;&gt;</span><span class="w"> </span><span class="s1">'__number__'</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="nb">number</span><span class="p">,</span>
+<span class="w">         </span><span class="n">created_at</span><span class="p">,</span>
+<span class="w">         </span><span class="k">cast</span><span class="p">(</span><span class="n">msg</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">json</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'request'</span><span class="w"> </span><span class="o">-&gt;&gt;</span><span class="w"> </span><span class="s1">'path'</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">path</span>
+<span class="w">  </span><span class="k">FROM</span><span class="w"> </span><span class="n">oereb_logs</span><span class="p">.</span><span class="n">logs</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">logger</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'JSON'</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="k">cast</span><span class="p">(</span><span class="n">msg</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">json</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'response'</span><span class="w"> </span><span class="o">-&gt;</span><span class="s1">'extras'</span><span class="w"> </span><span class="o">-&gt;&gt;</span><span class="w"> </span><span class="s1">'service'</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'GetExtractById'</span><span class="p">;</span>
+<span class="cm">/*stats_daily_extract_by_id*/</span>
+<span class="k">DROP</span><span class="w"> </span><span class="k">VIEW</span><span class="w"> </span><span class="k">IF</span><span class="w"> </span><span class="k">EXISTS</span><span class="w"> </span><span class="n">oereb_logs</span><span class="p">.</span><span class="n">stats_daily_extract_by_id</span><span class="p">;</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">OR</span><span class="w"> </span><span class="k">REPLACE</span><span class="w"> </span><span class="k">VIEW</span><span class="w"> </span><span class="n">oereb_logs</span><span class="p">.</span><span class="n">stats_daily_extract_by_id</span><span class="w"> </span><span class="k">AS</span>
+<span class="w">  </span><span class="k">SELECT</span>
+<span class="w">      </span><span class="n">date_trunc</span><span class="p">(</span><span class="s1">'day'</span><span class="p">,</span><span class="w"> </span><span class="n">created_at</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="k">day</span><span class="p">,</span>
+<span class="w">      </span><span class="k">COUNT</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">nb_requests</span><span class="p">,</span>
+<span class="w">      </span><span class="k">COUNT</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="n">FILTER</span><span class="w"> </span><span class="p">(</span><span class="k">WHERE</span><span class="w">  </span><span class="n">output_format</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'pdf'</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">format_pdf</span><span class="p">,</span>
+<span class="w">      </span><span class="k">COUNT</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="n">FILTER</span><span class="w"> </span><span class="p">(</span><span class="k">WHERE</span><span class="w">  </span><span class="n">output_format</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'json'</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">format_json</span><span class="p">,</span>
+<span class="w">      </span><span class="k">COUNT</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="n">FILTER</span><span class="w"> </span><span class="p">(</span><span class="k">WHERE</span><span class="w">  </span><span class="n">output_format</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'xml'</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">format_xml</span>
+<span class="w">  </span><span class="k">FROM</span><span class="w"> </span><span class="n">oereb_logs</span><span class="p">.</span><span class="n">stats_get_extract_by_id</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="k">cast</span><span class="p">(</span><span class="n">status_code</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nb">INTEGER</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">200</span>
+<span class="w">  </span><span class="k">GROUP</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+</pre></div>
+</div>
+</section>
+<section id="implementation">
+<h2>Implementation<a class="headerlink" href="#implementation" title="Link to this heading">¶</a></h2>
+</section>
+<section id="decorators-oerebstats">
+<span id="api-pyramid-oereb-contrib-stats-decorators-oerebstats"></span><span id="module-pyramid_oereb.contrib.stats.decorators"></span><span id="api-pyramid-oereb-contrib-stats-decorators"></span><span id="module-pyramid_oereb.contrib.stats"></span><span id="api-pyramid-oereb-contrib-stats"></span><h2><em>Decorators OerebStats</em><a class="headerlink" href="#decorators-oerebstats" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyramid_oereb.contrib.stats.decorators.OerebStats">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyramid_oereb.contrib.stats.decorators.</span></span><span class="sig-name descname"><span class="pre">OerebStats</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">service</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyramid_oereb/contrib/stats/decorators.html#OerebStats"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyramid_oereb.contrib.stats.decorators.OerebStats" title="Link to this definition">¶</a></dt>
+<dd><p>class OerebStats(dict)
+this class is used to provide a serializable object that can be
+used to provide insight of application usage in the logs.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyramid_oereb.contrib.stats.decorators.OerebStats.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">service</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyramid_oereb/contrib/stats/decorators.html#OerebStats.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyramid_oereb.contrib.stats.decorators.OerebStats.__init__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyramid_oereb.contrib.stats.decorators.OerebStats.clear">
+<span class="sig-name descname"><span class="pre">clear</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyramid_oereb.contrib.stats.decorators.OerebStats.clear" title="Link to this definition">¶</a></dt>
+<dd><p>Remove all items from the dict.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyramid_oereb.contrib.stats.decorators.OerebStats.copy">
+<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyramid_oereb.contrib.stats.decorators.OerebStats.copy" title="Link to this definition">¶</a></dt>
+<dd><p>Return a shallow copy of the dict.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyramid_oereb.contrib.stats.decorators.OerebStats.fromkeys">
+<span class="sig-name descname"><span class="pre">fromkeys</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">/</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyramid_oereb.contrib.stats.decorators.OerebStats.fromkeys" title="Link to this definition">¶</a></dt>
+<dd><p>Create a new dictionary with keys from iterable and values set to value.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyramid_oereb.contrib.stats.decorators.OerebStats.get">
+<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">/</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyramid_oereb.contrib.stats.decorators.OerebStats.get" title="Link to this definition">¶</a></dt>
+<dd><p>Return the value for key if key is in the dictionary, else default.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyramid_oereb.contrib.stats.decorators.OerebStats.items">
+<span class="sig-name descname"><span class="pre">items</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyramid_oereb.contrib.stats.decorators.OerebStats.items" title="Link to this definition">¶</a></dt>
+<dd><p>Return a set-like object providing a view on the dict’s items.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyramid_oereb.contrib.stats.decorators.OerebStats.keys">
+<span class="sig-name descname"><span class="pre">keys</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyramid_oereb/contrib/stats/decorators.html#OerebStats.keys"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyramid_oereb.contrib.stats.decorators.OerebStats.keys" title="Link to this definition">¶</a></dt>
+<dd><p>Return a set-like object providing a view on the dict’s keys.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyramid_oereb.contrib.stats.decorators.OerebStats.pop">
+<span class="sig-name descname"><span class="pre">pop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">k</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">d</span></span></em><span class="optional">]</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">v,</span> <span class="pre">remove</span> <span class="pre">specified</span> <span class="pre">key</span> <span class="pre">and</span> <span class="pre">return</span> <span class="pre">the</span> <span class="pre">corresponding</span> <span class="pre">value.</span></span></span><a class="headerlink" href="#pyramid_oereb.contrib.stats.decorators.OerebStats.pop" title="Link to this definition">¶</a></dt>
+<dd><p>If the key is not found, return the default if given; otherwise,
+raise a KeyError.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyramid_oereb.contrib.stats.decorators.OerebStats.popitem">
+<span class="sig-name descname"><span class="pre">popitem</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyramid_oereb.contrib.stats.decorators.OerebStats.popitem" title="Link to this definition">¶</a></dt>
+<dd><p>Remove and return a (key, value) pair as a 2-tuple.</p>
+<p>Pairs are returned in LIFO (last-in, first-out) order.
+Raises KeyError if the dict is empty.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyramid_oereb.contrib.stats.decorators.OerebStats.setdefault">
+<span class="sig-name descname"><span class="pre">setdefault</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">/</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyramid_oereb.contrib.stats.decorators.OerebStats.setdefault" title="Link to this definition">¶</a></dt>
+<dd><p>Insert key with a value of default if key is not in the dictionary.</p>
+<p>Return the value for key if key is in the dictionary, else default.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyramid_oereb.contrib.stats.decorators.OerebStats.update">
+<span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><span class="optional">[</span><em class="sig-param"><span class="n"><span class="pre">E</span></span></em>, <span class="optional">]</span><em class="sig-param"><span class="n"><span class="pre">**F</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None.</span>&#160; <span class="pre">Update</span> <span class="pre">D</span> <span class="pre">from</span> <span class="pre">mapping/iterable</span> <span class="pre">E</span> <span class="pre">and</span> <span class="pre">F.</span></span></span><a class="headerlink" href="#pyramid_oereb.contrib.stats.decorators.OerebStats.update" title="Link to this definition">¶</a></dt>
+<dd><p>If E is present and has a .keys() method, then does:  for k in E.keys(): D[k] = E[k]
+If E is present and lacks a .keys() method, then does:  for k, v in E: D[k] = v
+In either case, this is followed by: for k in F:  D[k] = F[k]</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyramid_oereb.contrib.stats.decorators.OerebStats.values">
+<span class="sig-name descname"><span class="pre">values</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyramid_oereb/contrib/stats/decorators.html#OerebStats.values"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyramid_oereb.contrib.stats.decorators.OerebStats.values" title="Link to this definition">¶</a></dt>
+<dd><p>Return an object providing a view on the dict’s values.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="print_proxy/mapfish-print.html" class="btn btn-neutral float-left" title="Mapfish Print" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../core/index.html" class="btn btn-neutral float-right" title="Core" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2017-2022, openoereb community.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

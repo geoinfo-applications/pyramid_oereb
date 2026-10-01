@@ -1,0 +1,535 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyramid_oereb.contrib.data_sources.standard.models.main &mdash; pyramid_oereb  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../../../../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../../../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../../../../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../../../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../../../index.html" class="icon icon-home">
+            pyramid_oereb
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../installation-dev.html">Installation for DEV’s</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../makefile.html">Makefile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../configuration.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../changes.html">Changes/Hints for migration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../contrib/index.html">Contribution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../core/index.html">Core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../faq.html">FAQ</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../../index.html">pyramid_oereb</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../models.html">pyramid_oereb.contrib.data_sources.standard.models</a></li>
+      <li class="breadcrumb-item active">pyramid_oereb.contrib.data_sources.standard.models.main</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pyramid_oereb.contrib.data_sources.standard.models.main</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">"""</span>
+<span class="sd">This is representing the applications working data schema. It provides buckets for general data you will need</span>
+<span class="sd">to run this application in standard mode.</span>
+<span class="sd">The buckets are:</span>
+
+<span class="sd">* Municipality</span>
+<span class="sd">* Real Estate</span>
+<span class="sd">* Address</span>
+<span class="sd">* Glossary</span>
+<span class="sd">* Exclusion of liability</span>
+
+<span class="sd">The geographical projection system which is used out of the box is LV95 aka EPSG:2056. Of course you can</span>
+<span class="sd">configure a different one.</span>
+<span class="sd">The name of the schema will be:</span>
+
+<span class="sd">    pyramid_oereb_main</span>
+
+<span class="sd">But you can change it also via :ref:`configuration`.</span>
+
+<span class="sd">Note:</span>
+<span class="sd">    Whenever you configure your own sqlalchemy ORM's to use them in this application you must imitate</span>
+<span class="sd">    the behaviour of the ORM's here. This means the names class variables as well as the types of these</span>
+<span class="sd">    variables.</span>
+
+<span class="sd">"""</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyramid_oereb.contrib.data_sources.standard.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_office</span><span class="p">,</span> <span class="n">get_document</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sqlalchemy</span><span class="w"> </span><span class="kn">import</span> <span class="n">Column</span><span class="p">,</span> <span class="n">PrimaryKeyConstraint</span><span class="p">,</span> <span class="n">ForeignKey</span><span class="p">,</span> <span class="n">UniqueConstraint</span><span class="p">,</span> <span class="n">DateTime</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sqlalchemy</span><span class="w"> </span><span class="kn">import</span> <span class="n">Unicode</span><span class="p">,</span> <span class="n">String</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">Integer</span><span class="p">,</span> <span class="n">Boolean</span><span class="p">,</span> <span class="n">Float</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">geoalchemy2</span><span class="w"> </span><span class="kn">import</span> <span class="n">Geometry</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sqlalchemy_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">JSONType</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sqlalchemy.orm</span><span class="w"> </span><span class="kn">import</span> <span class="n">declarative_base</span><span class="p">,</span> <span class="n">relationship</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyramid_oereb.core.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">Config</span>
+
+<span class="n">Base</span> <span class="o">=</span> <span class="n">declarative_base</span><span class="p">()</span>
+<span class="n">app_schema_name</span> <span class="o">=</span> <span class="n">Config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'app_schema'</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'name'</span><span class="p">)</span>
+<span class="n">srid</span> <span class="o">=</span> <span class="n">Config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'srid'</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="RealEstate">
+<a class="viewcode-back" href="../../../../../../contrib/data_sources/standard/models-main.html#pyramid_oereb.contrib.data_sources.standard.models.main.RealEstate">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">RealEstate</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    The container where you can throw in all the real estates this application should have access to, for</span>
+<span class="sd">    creating extracts.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        id (int): The identifier. This is used in the database only and must not be set manually. If</span>
+<span class="sd">            you  don't like it - don't care about.</span>
+<span class="sd">        identdn (str): The identifier on cantonal level.</span>
+<span class="sd">        number (str): The identifier on municipality level.</span>
+<span class="sd">        egrid (str): The identifier on federal level (the all unique one...)</span>
+<span class="sd">        type (str): The type of the real estate (This must base on DM01)</span>
+<span class="sd">        canton (str): Which canton this real estate is situated in (use official shortened Version</span>
+<span class="sd">            here. e.g. 'BE')</span>
+<span class="sd">        municipality (str): The name of the municipality this real estate is situated in.</span>
+<span class="sd">        subunit_of_land_register (str): The name of the maybe existing sub unit of land register if</span>
+<span class="sd">            municipality in  combination with number does not offer a unique constraint.</span>
+<span class="sd">            Else you can skip that.</span>
+<span class="sd">        subunit_of_land_register_designation (str): The maybe existing cantonal description</span>
+<span class="sd">            of the subunit_of_land_register e.g. «Grundbuchkreis», «Sektion», «Fraktion» etc.</span>
+<span class="sd">        fosnr (int): The identifier of the municipality. It is the commonly known id_bfs.</span>
+<span class="sd">        metadata_of_geographical_base_data (str): A link to the metadata which this geometry is</span>
+<span class="sd">            based on which is  delivering a machine readable response format (XML).</span>
+<span class="sd">        land_registry_area (str): The amount of the area of this real estate as it is declared in</span>
+<span class="sd">            the land  registers information.</span>
+<span class="sd">        limit (geoalchemy2.types.Geometry): The geometry of real estates border. For type</span>
+<span class="sd">            information see `geoalchemy2 &lt;https://geoalchemy-2.readthedocs.io/en/0.8.4/types.html&gt;`_</span>
+<span class="sd">            docs dependent on the</span>
+<span class="sd">            configured type. This concrete one is MULTIPOLYGON</span>
+<span class="sd">    """</span>
+    <span class="n">__table_args__</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'schema'</span><span class="p">:</span> <span class="n">app_schema_name</span><span class="p">}</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s1">'real_estate'</span>
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">identdn</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">number</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">egrid</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="nb">type</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">canton</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">municipality</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">subunit_of_land_register</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">subunit_of_land_register_designation</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">fosnr</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">metadata_of_geographical_base_data</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">land_registry_area</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">limit</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Geometry</span><span class="p">(</span><span class="s1">'MULTIPOLYGON'</span><span class="p">,</span> <span class="n">srid</span><span class="o">=</span><span class="n">srid</span><span class="p">))</span></div>
+
+
+
+<div class="viewcode-block" id="Municipality">
+<a class="viewcode-back" href="../../../../../../contrib/data_sources/standard/models-main.html#pyramid_oereb.contrib.data_sources.standard.models.main.Municipality">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Municipality</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    The municipality is the place where you hold the information about all the municipalities</span>
+<span class="sd">    you are having in your canton. This is used also in the applications process to check whether</span>
+<span class="sd">    a municipality is published or not.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        fosnr (int): The identifier of the municipality. It is the commonly known id_bfs or as or</span>
+<span class="sd">            nofs in the  french part.</span>
+<span class="sd">        name (str): The Name of the municipality.</span>
+<span class="sd">        published (bool): Switch whether a municipality is published or not. This has direct</span>
+<span class="sd">            influence on extract  generation.</span>
+<span class="sd">        geom (geoalchemy2.types.Geometry): The geometry of municipality borders. For type</span>
+<span class="sd">            information see `geoalchemy2 &lt;https://geoalchemy-2.readthedocs.io/en/0.8.4/types.html&gt;`_</span>
+<span class="sd">            docs dependent on the</span>
+<span class="sd">            configured type.  This concrete one is MULTIPOLYGON</span>
+<span class="sd">    """</span>
+    <span class="n">__table_args__</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'schema'</span><span class="p">:</span> <span class="n">app_schema_name</span><span class="p">}</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s1">'municipality'</span>
+    <span class="n">fosnr</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">autoincrement</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">published</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Boolean</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">server_default</span><span class="o">=</span><span class="n">text</span><span class="p">(</span><span class="s1">'FALSE'</span><span class="p">))</span>
+    <span class="n">geom</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Geometry</span><span class="p">(</span><span class="s1">'MULTIPOLYGON'</span><span class="p">,</span> <span class="n">srid</span><span class="o">=</span><span class="n">srid</span><span class="p">),</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="Address">
+<a class="viewcode-back" href="../../../../../../contrib/data_sources/standard/models-main.html#pyramid_oereb.contrib.data_sources.standard.models.main.Address">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Address</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    The bucket you can throw all addresses in the application should be able to use for the get egrid</span>
+<span class="sd">    webservice. This is a bypass for the moment. In the end it seems ways more flexible to bind</span>
+<span class="sd">    a service here but if you like you can use it.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        street_name (unicode): The street name for this address.</span>
+<span class="sd">        street_number (str): The house number of this address.</span>
+<span class="sd">        zip_code (int): The ZIP code for this address.</span>
+<span class="sd">        geom (geoalchemy2.types.Geometry): The geometry of real estates border. For type information</span>
+<span class="sd">            see `geoalchemy2 &lt;https://geoalchemy-2.readthedocs.io/en/0.8.4/types.html&gt;`_</span>
+<span class="sd">            docs dependent on the</span>
+<span class="sd">            configured type.  This concrete one is POINT</span>
+<span class="sd">    """</span>
+    <span class="n">__table_args__</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">PrimaryKeyConstraint</span><span class="p">(</span><span class="s2">"street_name"</span><span class="p">,</span> <span class="s2">"street_number"</span><span class="p">,</span> <span class="s2">"zip_code"</span><span class="p">),</span>
+        <span class="p">{</span><span class="s1">'schema'</span><span class="p">:</span> <span class="n">app_schema_name</span><span class="p">}</span>
+    <span class="p">)</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s1">'address'</span>
+    <span class="n">street_name</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Unicode</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">street_number</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">zip_code</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">autoincrement</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">geom</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Geometry</span><span class="p">(</span><span class="s1">'POINT'</span><span class="p">,</span> <span class="n">srid</span><span class="o">=</span><span class="n">srid</span><span class="p">))</span></div>
+
+
+
+<span class="n">Office</span> <span class="o">=</span> <span class="n">get_office</span><span class="p">(</span><span class="n">Base</span><span class="p">,</span> <span class="n">app_schema_name</span><span class="p">,</span> <span class="n">String</span><span class="p">)</span>
+<span class="n">Document</span> <span class="o">=</span> <span class="n">get_document</span><span class="p">(</span><span class="n">Base</span><span class="p">,</span> <span class="n">app_schema_name</span><span class="p">,</span> <span class="n">String</span><span class="p">,</span> <span class="n">Office</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="Theme">
+<a class="viewcode-back" href="../../../../../../contrib/data_sources/standard/models-main.html#pyramid_oereb.contrib.data_sources.standard.models.main.Theme">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Theme</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    The OEREB themes of the application</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        id (str): identifier and primary key, used in the database only</span>
+<span class="sd">        code (str): OEREB code of the theme - unique and used to link each PublicLawRestriction</span>
+<span class="sd">            with the corresponding theme</span>
+<span class="sd">        sub_code (str): OEREB sub_code of the sub-theme: only available for sub themes.</span>
+<span class="sd">        title (dict): the title of the theme as a multilingual dictionary</span>
+<span class="sd">        extract_index (int): index to sort the themes in the extract, defined in the specification</span>
+<span class="sd">    """</span>
+    <span class="n">__table_args__</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'schema'</span><span class="p">:</span> <span class="n">app_schema_name</span><span class="p">}</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s1">'theme'</span>
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">code</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">sub_code</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">JSONType</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">extract_index</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">UniqueConstraint</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">sub_code</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="Logo">
+<a class="viewcode-back" href="../../../../../../contrib/data_sources/standard/models-main.html#pyramid_oereb.contrib.data_sources.standard.models.main.Logo">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Logo</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    The container for all logos and municipality coat of arms</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        id (str): identifier and primary key, used in the database only</span>
+<span class="sd">        code (str): The identifier given by a code</span>
+<span class="sd">        logo (dict): The image encoded in base64</span>
+<span class="sd">    """</span>
+    <span class="n">__table_args__</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'schema'</span><span class="p">:</span> <span class="n">app_schema_name</span><span class="p">}</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s1">'logo'</span>
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">code</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">logo</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">JSONType</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="RealEstateType">
+<a class="viewcode-back" href="../../../../../../contrib/data_sources/standard/models-main.html#pyramid_oereb.contrib.data_sources.standard.models.main.RealEstateType">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">RealEstateType</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    The container where you can throw in all the real estates type texts this application</span>
+<span class="sd">    should have access to, for creating extracts.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        id (str): identifier and primary key, used in the database only</span>
+<span class="sd">        code (str): The identifier on federal level.</span>
+<span class="sd">        text (str): The text for the multilingual text.</span>
+<span class="sd">    """</span>
+    <span class="n">__table_args__</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'schema'</span><span class="p">:</span> <span class="n">app_schema_name</span><span class="p">}</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s1">'real_estate_type'</span>
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">code</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">JSONType</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="Glossary">
+<a class="viewcode-back" href="../../../../../../contrib/data_sources/standard/models-main.html#pyramid_oereb.contrib.data_sources.standard.models.main.Glossary">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Glossary</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    The bucket you can throw all items you want to have in the extracts glossary as reading help.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        id (str): identifier and primary key, used in the database only</span>
+<span class="sd">        title (str): The title or abbreviation of a glossary item.</span>
+<span class="sd">        content (str): The description or definition of a glossary item.</span>
+<span class="sd">    """</span>
+    <span class="n">__table_args__</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'schema'</span><span class="p">:</span> <span class="n">app_schema_name</span><span class="p">}</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s1">'glossary'</span>
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">JSONType</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">content</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">JSONType</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="Disclaimer">
+<a class="viewcode-back" href="../../../../../../contrib/data_sources/standard/models-main.html#pyramid_oereb.contrib.data_sources.standard.models.main.Disclaimer">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Disclaimer</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    The bucket you can throw all disclaimers in the application should be able to use.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        id (str): identifier and primary key, used in the database only</span>
+<span class="sd">        title (str): The title which the disclaimer item has.</span>
+<span class="sd">        content (str): The content which the disclaimer item has.</span>
+<span class="sd">        extract_index (int): index to sort the disclaimers in the extract</span>
+<span class="sd">    """</span>
+    <span class="n">__table_args__</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'schema'</span><span class="p">:</span> <span class="n">app_schema_name</span><span class="p">}</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s1">'disclaimer'</span>
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">JSONType</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">content</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">JSONType</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">extract_index</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="LawStatus">
+<a class="viewcode-back" href="../../../../../../contrib/data_sources/standard/models-main.html#pyramid_oereb.contrib.data_sources.standard.models.main.LawStatus">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">LawStatus</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    The container where you can throw in all the law status texts this application</span>
+<span class="sd">    should have access to, for creating extracts.</span>
+<span class="sd">    Attributes:</span>
+<span class="sd">        code (str): The identifier on federal level.</span>
+<span class="sd">        title (JSONType): The text for the multilingual text.</span>
+<span class="sd">    """</span>
+    <span class="n">__table_args__</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'schema'</span><span class="p">:</span> <span class="n">app_schema_name</span><span class="p">}</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s1">'law_status'</span>
+    <span class="n">code</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">JSONType</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="DocumentTypeText">
+<a class="viewcode-back" href="../../../../../../contrib/data_sources/standard/models-main.html#pyramid_oereb.contrib.data_sources.standard.models.main.DocumentTypeText">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">DocumentTypeText</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    The element holding the different document types and their translations.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        code (str): The identifier given by a code</span>
+<span class="sd">        title (str): The display name for the document type</span>
+<span class="sd">    """</span>
+    <span class="n">__table_args__</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'schema'</span><span class="p">:</span> <span class="n">app_schema_name</span><span class="p">}</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s1">'document_types'</span>
+    <span class="n">code</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">JSONType</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="GeneralInformation">
+<a class="viewcode-back" href="../../../../../../contrib/data_sources/standard/models-main.html#pyramid_oereb.contrib.data_sources.standard.models.main.GeneralInformation">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">GeneralInformation</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    The bucket to store the general information about the OEREB cadastre</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        id (str): identifier and primary key, used in the database only</span>
+<span class="sd">        title (dict): The title of the general information (multilingual)</span>
+<span class="sd">        content (dict): The actual information (multilingual)</span>
+<span class="sd">        extract_index (int): index to sort the items in the extract</span>
+<span class="sd">    """</span>
+    <span class="n">__table_args__</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'schema'</span><span class="p">:</span> <span class="n">app_schema_name</span><span class="p">}</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s1">'general_information'</span>
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">JSONType</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">content</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">JSONType</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">extract_index</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="ThemeDocument">
+<a class="viewcode-back" href="../../../../../../contrib/data_sources/standard/models-main.html#pyramid_oereb.contrib.data_sources.standard.models.main.ThemeDocument">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ThemeDocument</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Meta bucket (join table) for the relationship between theme and documents.</span>
+<span class="sd">    Attributes:</span>
+<span class="sd">        theme_id (str): The foreign key to the theme which has</span>
+<span class="sd">            relation to  a document.</span>
+<span class="sd">        document_id (str): The foreign key to the document which has relation to the public law</span>
+<span class="sd">            restriction.</span>
+<span class="sd">        theme (Theme):</span>
+<span class="sd">            The dedicated relation to the theme instance from database.</span>
+<span class="sd">        document (Document):</span>
+<span class="sd">            The dedicated relation to the document instance from database.</span>
+<span class="sd">        article_numbers (dict): relevant articles for the theme document relation</span>
+<span class="sd">    """</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s1">'theme_document'</span>
+    <span class="n">__table_args__</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">PrimaryKeyConstraint</span><span class="p">(</span><span class="s2">"theme_id"</span><span class="p">,</span> <span class="s2">"document_id"</span><span class="p">),</span>
+        <span class="p">{</span><span class="s1">'schema'</span><span class="p">:</span> <span class="n">app_schema_name</span><span class="p">}</span>
+    <span class="p">)</span>
+
+    <span class="n">theme_id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span>
+        <span class="n">ForeignKey</span><span class="p">(</span><span class="n">Theme</span><span class="o">.</span><span class="n">id</span><span class="p">),</span>
+        <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span>
+    <span class="p">)</span>
+    <span class="n">document_id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span>
+        <span class="n">ForeignKey</span><span class="p">(</span><span class="n">Document</span><span class="o">.</span><span class="n">id</span><span class="p">),</span>
+        <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span>
+    <span class="p">)</span>
+    <span class="n">theme</span> <span class="o">=</span> <span class="n">relationship</span><span class="p">(</span>
+        <span class="n">Theme</span><span class="p">,</span>
+        <span class="n">backref</span><span class="o">=</span><span class="s1">'legal_provisions'</span>
+    <span class="p">)</span>
+    <span class="n">document</span> <span class="o">=</span> <span class="n">relationship</span><span class="p">(</span>
+        <span class="n">Document</span>
+    <span class="p">)</span>
+    <span class="n">article_numbers</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">JSONType</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="MapLayering">
+<a class="viewcode-back" href="../../../../../../contrib/data_sources/standard/models-main.html#pyramid_oereb.contrib.data_sources.standard.models.main.MapLayering">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">MapLayering</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Attributes:</span>
+<span class="sd">        id (str): identifier and primary key, used in the database only</span>
+<span class="sd">        view_service (dict): Darstellungsdienst</span>
+<span class="sd">        layer_index (int): Index for sorting the layering of the view services for a theme</span>
+<span class="sd">        layer_opacity (float): Opacity of a view service</span>
+<span class="sd">    """</span>
+    <span class="n">__table_args__</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'schema'</span><span class="p">:</span> <span class="n">app_schema_name</span><span class="p">}</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s1">'map_layering'</span>
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">view_service</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">JSONType</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">layer_index</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">layer_opacity</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Float</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="Availability">
+<a class="viewcode-back" href="../../../../../../contrib/data_sources/standard/models-main.html#pyramid_oereb.contrib.data_sources.standard.models.main.Availability">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Availability</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Availability is a settings tabel where you can join municipalities to theme codes/sub theme</span>
+<span class="sd">    codes and assign a published flag.</span>
+<span class="sd">    This flag has to be `False`. Then the delivery of the PLR's in this theme/sub theme within</span>
+<span class="sd">    the municipality is blocked. This is useful to publish OEREB data step by step based on</span>
+<span class="sd">    municipality.</span>
+
+<span class="sd">    NOTE:</span>
+<span class="sd">        Core handles no found match in this table as it would be published. So you can either</span>
+<span class="sd">        fill this table with all combinations of themes/sub themes and municipalities and set</span>
+<span class="sd">        published to True (explicit configuration) or leave the table empty</span>
+<span class="sd">        (implicit configuration). Both leads to published data.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        id (str): The identifier of this list. It is used in DB only.</span>
+<span class="sd">        municipality_fosnr (int): The municipality identifier which the switch element belongs to.</span>
+<span class="sd">        theme_code (str): the theme code which this switch element belongs to.</span>
+<span class="sd">        available (bool): Switch wether the element is published or not.</span>
+<span class="sd">    """</span>
+    <span class="n">__table_args__</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'schema'</span><span class="p">:</span> <span class="n">app_schema_name</span><span class="p">}</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s1">'availability'</span>
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">municipality_fosnr</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">ForeignKey</span><span class="p">(</span><span class="n">Municipality</span><span class="o">.</span><span class="n">fosnr</span><span class="p">),</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">theme_code</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">available</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Boolean</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="DataIntegration">
+<a class="viewcode-back" href="../../../../../../contrib/data_sources/standard/models-main.html#pyramid_oereb.contrib.data_sources.standard.models.main.DataIntegration">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">DataIntegration</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    The bucket to fill in the date when this whole schema was updated. It has a relation to the</span>
+<span class="sd">    office to be able to find out who was the delivering instance.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        id (str): The identifier. This is used in the database only and must not be set manually. If</span>
+<span class="sd">            you  don't like it - don't care about.</span>
+<span class="sd">        date (datetime.date): The date when this data set was delivered.</span>
+<span class="sd">        theme_code (str): the theme code which this switch element belongs to.</span>
+<span class="sd">        office_id (str): A foreign key which points to the actual office instance.</span>
+<span class="sd">        office (pyramid_oereb.standard.models.airports_building_lines.Office):</span>
+<span class="sd">            The actual office instance which the id points to.</span>
+<span class="sd">        checksum (str): A checksum to persist the data state which is in the db. It is thought</span>
+<span class="sd">            to be a helper field to check if import is necessary.</span>
+<span class="sd">    """</span>
+    <span class="n">__table_args__</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'schema'</span><span class="p">:</span> <span class="n">app_schema_name</span><span class="p">}</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s1">'data_integration'</span>
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">autoincrement</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">date</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">DateTime</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">theme_code</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">office_id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">ForeignKey</span><span class="p">(</span><span class="n">Office</span><span class="o">.</span><span class="n">id</span><span class="p">),</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">office</span> <span class="o">=</span> <span class="n">relationship</span><span class="p">(</span><span class="n">Office</span><span class="p">)</span>
+    <span class="n">checksum</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2017-2022, openoereb community.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
