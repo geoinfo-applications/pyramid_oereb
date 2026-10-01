@@ -234,7 +234,7 @@ $(DB_CREATE_EXTENSION):
 
 $(DB_DEV_TABLES_CREATE_SCRIPT): $(DEV_CONFIGURATION_YML) ${VENV_ROOT}/requirements-timestamp $(DEV_CREATE_STANDARD_TABLES_SCRIPT) \
 								$(DEV_CREATE_OEREBLEX_TABLES_SCRIPT) $(DEV_CREATE_MAIN_TABLES_SCRIPT)
-	$(DEV_CREATE_MAIN_TABLES_SCRIPT) --configuration $< --sql-file $@
+	$(DEV_CREATE_MAIN_TABLES_SCRIPT) --over-write --configuration $< --sql-file $@
 	$(DEV_CREATE_STANDARD_TABLES_SCRIPT) --configuration $< --sql-file $@
 	$(DEV_CREATE_OEREBLEX_TABLES_SCRIPT) --configuration $< --sql-file $@
 
@@ -316,7 +316,7 @@ test-core_adapter: ${VENV_ROOT}/requirements-timestamp
 
 .PHONY: test-contrib-print_proxy-mapfish_print
 test-contrib-print_proxy-mapfish_print: ${VENV_ROOT}/requirements-timestamp
-	mkdir ./tmp
+	mkdir -p ./tmp
 	$(VENV_BIN)/py.test -vv $(PYTEST_OPTS) --cov-config .coveragerc.contrib-print_proxy-mapfish_print --cov $(PACKAGE) --cov-report xml:coverage.contrib-print_proxy-mapfish_print.xml tests/contrib.print_proxy.mapfish_print
 
 .PHONY: test-contrib-data_sources-standard

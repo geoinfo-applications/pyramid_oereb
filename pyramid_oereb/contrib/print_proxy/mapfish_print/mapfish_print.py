@@ -269,10 +269,12 @@ class Renderer(JsonRenderer):
                 self._multilingual_text(theme, 'Text')
 
         # extract theme titles for later use before resetting "ConcernedTheme"
-        themeTitlesConcerned = {theme["Code"]: theme["Text"]
-                       for theme in (extract_dict.get("ConcernedTheme", []))}
-        themeTitlesNotConcerned = {theme["Code"]: theme["Text"]
-                       for theme in (extract_dict.get("NotConcernedTheme", []))}
+        themeTitlesConcerned = {
+            theme["Code"]: theme["Text"] for theme in extract_dict.get("ConcernedTheme", [])
+        }
+        themeTitlesNotConcerned = {
+            theme["Code"]: theme["Text"] for theme in extract_dict.get("NotConcernedTheme", [])
+        }
         extract_dict['ConcernedTheme'] = []
         self._flatten_object(extract_dict, 'PLRCadastreAuthority')
         self._multilingual_text(extract_dict, 'PLRCadastreAuthority_OfficeAtWeb')
@@ -424,7 +426,9 @@ class Renderer(JsonRenderer):
 
             theme_text = restriction_on_landownership['Theme_Text']
             if 'Theme_SubCode' in restriction_on_landownership:
-                main_theme_text = themeTitlesConcerned.get(restriction_on_landownership['Theme_Code']) or themeTitlesNotConcerned.get(restriction_on_landownership['Theme_Code'])
+                main_theme_code = restriction_on_landownership['Theme_Code']
+                main_theme_text = (themeTitlesConcerned.get(main_theme_code)
+                                   or themeTitlesNotConcerned.get(main_theme_code))
                 if main_theme_text is not None:
                     theme_text = f"{main_theme_text}: {theme_text}"
 
@@ -500,25 +504,32 @@ class Renderer(JsonRenderer):
             if new_responsible_office['Name'] not in existing_office_names:
                 current['ResponsibleOffice'].append(new_responsible_office)
 
-            # add additionally map layer to the theme if not already there
-            new_layer = restriction_on_landownership['baseLayers']['layers'][0]['layers'][0]
-            new_base_url = restriction_on_landownership['baseLayers']['layers'][0]['baseURL']
-            existing_layer = [
+            # add additional map layers to the theme if not already there
+            new_wms_source = restriction_on_landownership['baseLayers']['layers'][0]
+            new_layers = new_wms_source['layers']
+            new_base_url = new_wms_source['baseURL']
+            existing_layers = [
                 layer for layers in current['baseLayers']['layers'] for layer in layers['layers']
                 ]
-            if new_layer not in existing_layer:
-                # add it in the element with the same baseURL.
-                # The rest of the parameters should be the same as given by the theme
-                layer_added = False
-                for element in current['baseLayers']['layers']:
-                    if new_base_url == element['baseURL']:
-                        element['layers'].append(new_layer)
-                        layer_added = True
-                        break
-                if not layer_added:
-                    current['baseLayers']['layers'].append(
-                        restriction_on_landownership['baseLayers']['layers'][0]
-                    )
+
+            for layer in new_layers:
+                if layer not in existing_layers:
+                    # add it in the element with the same baseURL.
+                    # The rest of the parameters should be the same as given by the theme
+                    layer_added = False
+                    for element in current['baseLayers']['layers']:
+                        if new_base_url == element['baseURL']:
+                            element['layers'].append(layer)
+                            layer_added = True
+                            existing_layers.append(layer)
+                            break
+                    if not layer_added:
+                        # If no source with same baseURL exists, add the whole source
+                        # but initialized only with this layer
+                        new_source_to_add = dict(new_wms_source)
+                        new_source_to_add['layers'] = [layer]
+                        current['baseLayers']['layers'].append(new_source_to_add)
+                        existing_layers.append(layer)
 
             # Text
             for element in text_element:

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
-from operator import attrgetter
+from operator import attrgetter, itemgetter
 from pyramid.path import DottedNameResolver
 
 from shapely.geometry import box
@@ -18,12 +18,7 @@ class ExtractReader(object):
     """
     The class which generates *the extract* as a record
     (:ref:`api-pyramid_oereb-core-records-extract-extractrecord`). This is the point where all necessary
-    and extract related components are bound together.
-
-    Attributes:
-        extract (pyramid_oereb.lib.records.extract.ExtractRecord or None): The extract as a record
-            representation. On initialisation this is None. It will be set by calling the read method of the
-            instance.
+    and extract-related components are bound together.
     """
 
     def __init__(self, plr_sources, plr_cadastre_authority):
@@ -34,7 +29,6 @@ class ExtractReader(object):
             plr_cadastre_authority (pyramid_oereb.lib.records.office.OfficeRecord): The authority responsible
                 for the PLR cadastre.
         """
-        self.extract = None
         self._plr_sources_ = plr_sources
         self._plr_cadastre_authority_ = plr_cadastre_authority
         self.law_status = Config.get_law_status_codes()
@@ -47,6 +41,30 @@ class ExtractReader(object):
             cadastre.
         """
         return self._plr_cadastre_authority_
+
+    def sub_theme_entry(self, plr, index):
+        """
+        Builds the entry that accompanies a theme in the concerned and not concerned lists.
+
+        A sub theme sorts by its own extract index. A main theme has no index below the theme
+        level, so it sorts by its theme index with the record's position appended as a fraction,
+        which keeps the themes apart without reordering them.
+
+        Args:
+            plr (pyramid_oereb.core.records.plr.PlrRecord or
+                pyramid_oereb.core.records.plr.EmptyPlrRecord): The record the theme came from.
+            index (int): The position of the record in the real estate's restrictions.
+
+        Returns:
+            dict: The sub theme record under "sub_theme", None for a main theme, and the value to
+                sort by under "extract_index".
+        """
+        if plr.sub_theme is not None:
+            return {'extract_index': plr.sub_theme.extract_index, 'sub_theme': plr.sub_theme}
+        return {
+            'extract_index': float(str(plr.theme.extract_index) + "." + str(index)[::-1]),
+            'sub_theme': None,
+        }
 
     def read(self, params, real_estate, municipality):
         """
@@ -84,29 +102,35 @@ class ExtractReader(object):
 
             for plr_source in self._plr_sources_:
                 if not params.skip_topic(plr_source.info.get('code')):
-                    plr_source.read(params, real_estate, bbox)
-
-                    real_estate.public_law_restrictions.extend(plr_source.records)
+                    records = plr_source.read(params, real_estate, bbox)
+                    for record in records:
+                        if isinstance(record, PlrRecord):
+                            # Copy geometries to avoid shared state across requests if globalized
+                            record.geometries = [
+                                self._copy_geometry(g) for g in record.geometries
+                            ]
+                        real_estate.public_law_restrictions.append(record)
 
             for index, plr in enumerate(real_estate.public_law_restrictions):
 
                 # Filter topics due to topics parameter
                 if not params.skip_topic(plr.theme.code):
                     if isinstance(plr, PlrRecord):
-                        sub_theme_not_in = plr.sub_theme is not None and plr.sub_theme.sub_code not in [rec['sub_theme'].sub_code for rec in concerned_sub_themes if rec['sub_theme'] is not None]
-                        if plr.theme.code not in [theme.code for theme in concerned_themes] or sub_theme_not_in:
+                        known_sub_codes = [
+                            entry['sub_theme'].sub_code for entry in concerned_sub_themes
+                            if entry['sub_theme'] is not None
+                        ]
+                        sub_theme_is_new = (
+                            plr.sub_theme is not None and plr.sub_theme.sub_code not in known_sub_codes
+                        )
+                        known_theme_codes = [theme.code for theme in concerned_themes]
+                        if plr.theme.code not in known_theme_codes or sub_theme_is_new:
                             concerned_themes.append(plr.theme)
-                            if plr.sub_theme is not None:
-                                concerned_sub_themes.append({ 'extract_index': plr.sub_theme.extract_index, 'sub_theme': plr.sub_theme })
-                            else:
-                                concerned_sub_themes.append({ 'extract_index': float(str(plr.theme.extract_index) + "." + str(index)[::-1]), 'sub_theme': None })
+                            concerned_sub_themes.append(self.sub_theme_entry(plr, index))
                     elif isinstance(plr, EmptyPlrRecord):
                         if plr.has_data:
                             not_concerned_themes.append(plr.theme)
-                            if plr.sub_theme is not None:
-                                not_concerned_sub_themes.append({ 'extract_index': plr.sub_theme.extract_index, 'sub_theme': plr.sub_theme })
-                            else:
-                                not_concerned_sub_themes.append({ 'extract_index': float(str(plr.theme.extract_index) + "." + str(index)[::-1]), 'sub_theme': None })
+                            not_concerned_sub_themes.append(self.sub_theme_entry(plr, index))
                         else:
                             themes_without_data.append(plr.theme)
 
@@ -116,9 +140,9 @@ class ExtractReader(object):
 
         # sort theme lists
         concerned_themes.sort(key=attrgetter('extract_index'))
-        concerned_sub_themes.sort(key=lambda concerned_sub_theme: concerned_sub_theme['extract_index'])
+        concerned_sub_themes.sort(key=itemgetter('extract_index'))
         not_concerned_themes.sort(key=attrgetter('extract_index'))
-        not_concerned_sub_themes.sort(key=lambda not_concerned_sub_theme: not_concerned_sub_theme['extract_index'])
+        not_concerned_sub_themes.sort(key=itemgetter('extract_index'))
         themes_without_data.sort(key=attrgetter('extract_index'))
 
         # sort plr according to theme, sub-theme and law-status
@@ -143,7 +167,7 @@ class ExtractReader(object):
         municipality_logo = Config.get_municipality_logo(municipality.fosnr)
         qr_code_image = ImageRecord(params.qr_code)
 
-        self.extract = ExtractRecord(
+        extract = ExtractRecord(
             real_estate,
             oereb_logo,
             confederation_logo,
@@ -162,7 +186,7 @@ class ExtractReader(object):
         )
 
         log.debug("read() done")
-        return self.extract
+        return extract
 
     def _sort_plr_law_status(self, plr_element):
         """
@@ -208,3 +232,22 @@ class ExtractReader(object):
                 else plr_element.theme.extract_index
             return index
         return 10000
+
+    def _copy_geometry(self, geometry_record):
+        """
+        Creates a fresh copy of the geometry record to avoid shared state across requests.
+
+        Args:
+            geometry_record (pyramid_oereb.core.records.geometry.GeometryRecord): The record to copy.
+
+        Returns:
+            pyramid_oereb.core.records.geometry.GeometryRecord: The fresh copy.
+        """
+        return geometry_record.__class__(
+            geometry_record.law_status,
+            geometry_record.published_from,
+            geometry_record.published_until,
+            geometry_record.geom,
+            geo_metadata=geometry_record.geo_metadata,
+            public_law_restriction=geometry_record.public_law_restriction
+        )

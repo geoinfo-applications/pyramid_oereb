@@ -1,12 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from uuid import uuid4
-
-# import yappi
 import qrcode
 import io
-# import re
 
 from pyramid.httpexceptions import HTTPBadRequest, HTTPSeeOther, HTTPInternalServerError, HTTPNoContent, \
     HTTPNotFound
@@ -18,7 +14,10 @@ from pyramid_oereb import route_prefix
 from pyramid_oereb import Config
 from pyreproj import Reprojector
 
+from pyramid_oereb.core.processor import create_processor, Processor
 from pyramid_oereb.core.readers.address import AddressReader
+from pyramid_oereb.core.records.address import AddressRecord
+from pyramid_oereb.core.records.real_estate import RealEstateRecord
 from pyramid_oereb.core.renderer import Base as Renderer
 from timeit import default_timer as timer
 
@@ -146,7 +145,7 @@ class PlrWebservice(object):
                 service = 'GetEgridIdent'
                 records = self._get_egrid_ident(params)
             # Type C
-            elif self.__has_params__(['POSTALCODE', 'LOCALISATION', 'NUMBER']):
+            elif self.__has_params__(['POSTALCODE', 'LOCALISATION']):
                 service = 'GetEgridAddress'
                 records = self._get_egrid_address(params)
             # Type D
@@ -157,7 +156,7 @@ class PlrWebservice(object):
             else:
                 raise HTTPBadRequest(
                     'Invalid parameters. You need one of the following combinations: '
-                    'EN or GNSS or IDENTDN and NUMBER or POSTALCODE, LOCALISATION and NUMBER.'
+                    'EN or GNSS or IDENTDN and NUMBER or POSTALCODE and LOCALISATION.'
                 )
             response = self.__get_egrid_response__(records, params)
         except HTTPNoContent as err:
@@ -196,7 +195,7 @@ class PlrWebservice(object):
                     Config.get('srid'),
                     self.__parse_gnss__(gnss).wkt
                 )
-            processor = self._request.pyramid_oereb_processor
+            processor = create_processor(real_estate_only=True)
             return processor.real_estate_reader.read(params, **{'geometry': geom_wkt})
         else:
             raise HTTPBadRequest('EN or GNSS must be defined.')
@@ -215,7 +214,7 @@ class PlrWebservice(object):
         identdn = self._params.get('IDENTDN')
         number = self._params.get('NUMBER')
         if identdn and number:
-            processor = self._request.pyramid_oereb_processor
+            processor = create_processor(real_estate_only=True)
             return processor.real_estate_reader.read(
                 params,
                 **{
@@ -226,36 +225,45 @@ class PlrWebservice(object):
         else:
             raise HTTPBadRequest('IDENTDN and NUMBER must be defined.')
 
-    def _get_egrid_address(self, params):
+    def _get_egrid_address(self, params) -> list[RealEstateRecord]:
         """
-        Returns a list with the matched EGRIDs for the given postal address.
+        Searches EGRIDs by querying the data source with the given postal address.
 
         Args:
-            params (pyramid_oereb.views.webservice.Parameter): The parameter object.
+            params (pyramid_oereb.core.views.webservice.Parameter):
+                The parameter object.
 
         Returns:
-            list of pyramid_oereb.core.records.real_estate.RealEstateRecord:
-                The list of all found records filtered by the passed criteria.
+            list[pyramid_oereb.core.records.real_estate.RealEstateRecord]:
+                A list of real estate records matching the supplied search criteria.
         """
-        postalcode = self._params.get('POSTALCODE')
-        localisation = self._params.get('LOCALISATION')
-        number = self._params.get('NUMBER')
-        if postalcode and localisation and number:
-            reader = AddressReader(
-                Config.get_address_config().get('source').get('class'),
-                **Config.get_address_config().get('source').get('params')
+        postalcode: str = str(self._params.get('POSTALCODE'))
+        localisation: str = str(self._params.get('LOCALISATION'))
+        number: str | None = self._params.get('NUMBER')
+        if not (postalcode and localisation):
+            raise HTTPBadRequest(
+                'Both the POSTALCODE and the LOCALISATION must be provided for querying EGRIDs by address.'
             )
-            addresses = reader.read(params, localisation, int(postalcode), number)
-            if len(addresses) == 0:
-                raise HTTPNoContent()
-            geometry = 'SRID={srid};{wkt}'.format(
+        address_reader: AddressReader = AddressReader(
+            Config.get_address_config().get('source').get('class'),
+            **Config.get_address_config().get('source').get('params')
+        )
+        addresses: list[AddressRecord] = address_reader.read(params, localisation, int(postalcode), number)
+        if not addresses:
+            raise HTTPNoContent()
+        processor: Processor = create_processor(real_estate_only=True)
+        real_estate_records: list[RealEstateRecord] = []
+        for address in addresses:
+            wkt_geometry: str = 'SRID={srid};{wkt}'.format(
                 srid=Config.get('srid'),
-                wkt=addresses[0].geom.wkt
+                wkt=address.geom.wkt
             )
-            processor = self._request.pyramid_oereb_processor
-            return processor.real_estate_reader.read(params, **{'geometry': geometry})
-        else:
-            raise HTTPBadRequest('POSTALCODE, LOCALISATION and NUMBER must be defined.')
+            real_estate_records.extend(processor.real_estate_reader.read(
+                params,
+                **{'geometry': wkt_geometry})
+            )
+
+        return real_estate_records
 
     def get_extract_by_id(self):
         """
@@ -268,7 +276,7 @@ class PlrWebservice(object):
         log.debug("get_extract_by_id() start")
         try:
             params = self.__validate_extract_params__()
-            processor = self._request.pyramid_oereb_processor
+            processor = create_processor()
             # read the real estate from configured source by the passed parameters
             real_estate_reader = processor.real_estate_reader
             if params.egrid:
@@ -431,7 +439,7 @@ class PlrWebservice(object):
         Get format in the url and validate that it's one accepted.
 
         Args:
-            accepted_formats (list): A list of accepted format (str).
+            accepted_formats (list): A list of accepted formats (str).
 
         Returns:
             str: The validated format parameter.
@@ -573,20 +581,20 @@ class PlrWebservice(object):
             raise HTTPBadRequest(
                 'The parameter GNSS has to be a comma-separated pair of coordinates.')
 
-        # Coordinates provided as "latitude,longitude"
+        # Coordinates provided as "latitude, longitude"
         return self.__coord_transform__(coords, 4326).buffer(1.0)
 
-    def __has_params__(self, needed):
+    def __has_params__(self, required: list[str]):
         """
-        Checks if the request contains all needed parameters.
+        Checks if the request contains all required parameters.
 
         Args:
-            needed (list of str): The parameters to check.
+            required (list of str): The parameters to check.
 
         Returns:
-            bool: True if all needed parameters are available, false otherwise.
+            bool: True if all required parameters are available, false otherwise.
         """
-        for p in needed:
+        for p in required:
             if p not in self._params:
                 return False
         return True
@@ -639,8 +647,6 @@ class Parameter(object):
         self.__topics__ = topics
         self.__extract_url__ = extract_url
         self.__qr_code_ref__ = qr_code_ref
-        # uniquely identifier to reference the original request in the pyramid_oereb system
-        self.identifier = str(uuid4())
 
     def set_identdn(self, identdn):
         """

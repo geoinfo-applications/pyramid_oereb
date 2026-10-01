@@ -6,11 +6,47 @@ Changes/Hints for migration
 This chapter will give you hints on how to handle version migration, in particular regarding what you may need
 to adapt in your project configuration, database etc. when upgrading to a new version.
 
+Version 2.6.0
+-------------
+Feature and maintenance release:
 
-Master
-------
-* Support of Oereblex API version 1.2.6 via geolink-formatter version 2.0.7 added (#). The oereblex schema version that is used to download oereblex xmls can be set in the file pyramid_oereb.yaml.
+* Library upgrades (psycopg2, lxml, responses, pypdf, github-pages-deploy-action, pillow, actions/setup-python, urllib3, c2c-template, actions/checkout, pytest)
+* Fix bug in convert_to_printable_extract to pick up all layers in a multi-layer WMS url (`#2187 <https://github.com/openoereb/pyramid_oereb/pull/2187>`__)
+* Sanitize schema and table names to prevent invalid characters in SQL operations (`#2189 <https://github.com/openoereb/pyramid_oereb/pull/2189>`__)
+* Make `street_number` an optional parameter in GetEGRID() api request (`#2196 <https://github.com/openoereb/pyramid_oereb/pull/2196>`__)
+* Add explicit permissions to GitHub Actions workflows (`#2197 <https://github.com/openoereb/pyramid_oereb/pull/2197>`__)
+* Add `contents: write` permission to gh-pages deployment job in CI workflow (`#2199 <https://github.com/openoereb/pyramid_oereb/pull/2199>`__)
 
+Version 2.5.9
+-------------
+Feature and maintenance release:
+
+* Library upgrades (pyramid, sqlalchemy, responses, pillow, pypdf, actions/checkout, geoalchemy2, pytest, requests, codecov/codecov-action, pytest-cov, psycopg2, lxml)
+* Update the docker base image to python:3.14.5-bookworm (#2178)
+* Prevent duplicate instructions in DB init script (#2142)
+* Remove unused @pytest.mark.usefixtures decorator from test_db_url (#2145)
+* Refactor test_handle_collection to assert spatial filter presence instead of full SQL string output (#2148)
+* Performance improvement (#2152)
+* Caching of geolinks (#2165)
+* Fix bug in get_index_and_opacity_of_view_service (#2184)
+
+Version 2.5.8
+-------------
+Feature and maintenance release:
+
+* Library upgrades (sqlalchemy, psycopg2, actions/checkout, urllib3, qrcode, pytest-cov, jsonschema, JamesIves/github-pages-deploy-action, actions/setup-python, c2cwsgiutils)
+* Drop support for Python 3.9 (#2127)
+* Introduce official support for Python 3.13 and 3.14 (#2127)
+* Update the docker base image to python:3.14.0-bookworm (#2127)
+* Drop load_legend_entries.py script and related dependency to pyconizer (#2127)
+
+Version 2.5.7
+-------------
+Feature and maintenance release:
+
+* Library upgrades (requests, pytest, pypdf, responses, pyflakes, flake8, pycodestyle, webtest, sqlalchemy, actions/checkout)
+* Revert "initialize processor on server boot (#2059)" to fix concurrency issues (#2115)
+* Support of Oereblex API version 1.2.6 via geolink-formatter version 2.0.7 added (#2112). The oereblex schema version that is used to download oereblex xmls can be set in the file pyramid_oereb.yaml.
 
 Version 2.5.6
 -------------
@@ -30,7 +66,7 @@ Feature and maintenance release:
 
 * Library upgrades (pillow, pytest, webtest, waitress, codecov/codecov-action, geoalchemy, JamesIves/github-pages-deploy-action, urllib3)
 * Reset Python Docker Tag to 3.12.5
-* Support of Oereblex API version 1.2.5 via geolink-formatter 2.0.6 added (#2081). The oereblex schema version that is used to download oereblex xmls can be set in the file pyramid_oereb.yaml.
+* Support of Oereblex API version 1.2.5 via geolink-formatter 2.0.6 added (`#2081 <https://github.com/openoereb/pyramid_oereb/pull/2081>`__). The oereblex schema version that is used to download oereblex xmls can be set in the file pyramid_oereb.yaml.
 
 
 Version 2.5.4

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
+import weakref
 
 from pyramid_oereb import Config
 from pyramid_oereb.contrib.data_sources.oereblex.sources.document import OEREBlexSource
@@ -39,16 +40,17 @@ class DatabaseOEREBlexSource(DatabaseSource):
         config = Config.get_oereblex_config()
         config["code"] = self._plr_info.get('code')
         self._oereblex_source = OEREBlexSource(**config)
-        self._queried_geolinks = {}
+        self._oereblex_cache = weakref.WeakKeyDictionary()
 
     @staticmethod
-    def get_config_value_for_plr_code(url_param_config, plr_code, plr_sub_code):
+    def get_config_value_for_plr_code(url_param_config, plr_code, plr_sub_code=None):
         """
         Returns the appropriate configuration entry for a plr within a url_param_config section.
 
         Args:
             url_param_config (list of code and url_param): url parameters to use, per plr code
             plr_code (str): the plr code
+            plr_sub_code (str or None): the sub code of the plr, for entries that carry one
         """
         for url_param_entry in url_param_config:
             # Check if sub_code exists in the entry
@@ -58,7 +60,10 @@ class DatabaseOEREBlexSource(DatabaseSource):
                     if 'url_param' in url_param_entry:
                         return url_param_entry['url_param']
                     else:
-                        log.warning("Incorrect configuration: missing url_param for entry with code {} and sub_code {}".format(plr_code, plr_sub_code))
+                        log.warning(
+                            "Incorrect configuration: missing url_param for entry with code {} "
+                            "and sub_code {}".format(plr_code, plr_sub_code)
+                        )
                         return None
             else:
                 # Only code must match if sub_code is not present
@@ -66,7 +71,10 @@ class DatabaseOEREBlexSource(DatabaseSource):
                     if 'url_param' in url_param_entry:
                         return url_param_entry['url_param']
                     else:
-                        log.warning("Incorrect configuration: missing url_param for entry with code {}".format(plr_code))
+                        log.warning(
+                            "Incorrect configuration: missing url_param for entry "
+                            "with code {}".format(plr_code)
+                        )
                         return None
         return None
 
@@ -83,7 +91,9 @@ class DatabaseOEREBlexSource(DatabaseSource):
         plr_code = self._plr_info.get('code')
         plr_sub_code = self._plr_info.get('sub_code')
         if url_param_config:
-            oereblex_params = DatabaseOEREBlexSource.get_config_value_for_plr_code(url_param_config, plr_code, plr_sub_code)
+            oereblex_params = DatabaseOEREBlexSource.get_config_value_for_plr_code(
+                url_param_config, plr_code, plr_sub_code
+            )
         law_status = Config.get_law_status_by_data_code(
             plr_code,
             public_law_restriction_from_db.law_status
@@ -97,7 +107,7 @@ class DatabaseOEREBlexSource(DatabaseSource):
         them to the current public law restriction.
 
         Args:
-            params (pyramid_oereb.views.webservice.Parameter): The parameters of the extract request.
+            params (pyramid_oereb.core.views.webservice.Parameter): The parameters of the extract request.
             geolink (int): The ID of the GEO-Link to request the documents for.
             law_status (pyramid_oereb.core.records.lawstatus.LawStatusRecord): The restriction's law status.
             oereblex_params (string): URL parameter to add to the models request
@@ -108,16 +118,22 @@ class DatabaseOEREBlexSource(DatabaseSource):
         """
         log.debug("document_records_from_oereblex() start, GEO-Link {}, law status {}, oereblex_params {}"
                   .format(geolink, law_status.code, oereblex_params))
-        identifier = '{}{}{}'.format(geolink, law_status.code, params.language)
-        if identifier in self._queried_geolinks[params.identifier]:
-            log.debug('skip querying this geolink "{}" because it was fetched already.'.format(identifier))
-            log.debug('use already queried instead')
+
+        # Initialize request-scoped cache if not already done
+        if params not in self._oereblex_cache:
+            self._oereblex_cache[params] = {}
+        request_cache = self._oereblex_cache[params]
+
+        identifier = '{}{}'.format(geolink, law_status.code)
+        if identifier not in request_cache:
+            log.debug('Fetching and caching geolink {} from OEREBlex for current request'.format(geolink))
+            request_cache[identifier] = self._oereblex_source.read(
+                params, geolink, law_status, oereblex_params
+            )
         else:
-            self._oereblex_source.read(params, geolink, law_status, oereblex_params)
-            log.debug("document_records_from_oereblex() returning {} records"
-                      .format(len(self._oereblex_source.records)))
-            self._queried_geolinks[params.identifier][identifier] = self._oereblex_source.records
-        return self._queried_geolinks[params.identifier][identifier]
+            log.debug('Using cached geolink for current request {}'.format(identifier))
+
+        return request_cache[identifier]
 
     def collect_related_geometries_by_real_estate(self, session, real_estate):
         """
@@ -143,11 +159,3 @@ class DatabaseOEREBlexSource(DatabaseSource):
             selectinload(self.models.Geometry.public_law_restriction)
             .selectinload(self.models.PublicLawRestriction.responsible_office),
         ).all()
-
-    def read(self, params, real_estate, bbox):
-        # adding a local cache depending on the request identifier
-        self._queried_geolinks[params.identifier] = {}
-        # calling the original logic
-        super(DatabaseOEREBlexSource, self).read(params, real_estate, bbox)
-        # removing the cache after work is done
-        del self._queried_geolinks[params.identifier]

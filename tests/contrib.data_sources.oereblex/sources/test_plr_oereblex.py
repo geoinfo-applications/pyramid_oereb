@@ -4,7 +4,6 @@ import pytest
 from unittest.mock import patch
 
 from geoalchemy2 import WKTElement
-from shapely.creation import box
 from shapely.geometry import Polygon, Point, LineString
 from shapely.wkt import loads
 from sqlalchemy import String
@@ -51,47 +50,6 @@ def real_estate_wkt():
 @pytest.fixture
 def real_estate_shapely_geom(real_estate_wkt):
     yield loads(real_estate_wkt)
-
-
-@pytest.fixture
-def wkb_multipolygon():
-    yield WKTElement(
-        "SRID=2056;MULTIPOLYGON((("
-        "2609229.759 1263666.789,"
-        "2609231.206 1263670.558,"
-        "2609229.561 1263672.672,"
-        "2609229.472 1263675.47,"
-        "2609251.865 1263727.506,"
-        "2609275.847 1263783.29,"
-        "2609229.759 1263666.789"
-        ")))",
-        extended=True
-    )
-
-
-@pytest.fixture
-def real_estate(wkb_multipolygon):
-    from pyramid_oereb.contrib.data_sources.standard.models.main import RealEstate
-    yield RealEstate(**{
-            "id": 1,
-            "fosnr": 2771,
-            "limit": wkb_multipolygon,
-            "type": "Liegenschaft",
-            "canton": "BL",
-            "identdn": "BL0200002771",
-            "municipality": "Oberwil (BL)",
-            "number": "70",
-            "egrid": "CH113928077734",
-            "land_registry_area": 35121,
-            "subunit_of_land_register": "TEST",
-            "subunit_of_land_register_designation": "TEST",
-            "metadata_of_geographical_base_data": "https://testmetadata.url"
-        })
-
-
-@pytest.fixture
-def bbox():
-    yield box(0, 0, 1, 1)
 
 
 @pytest.fixture
@@ -694,7 +652,6 @@ def test_init(plr_source_params):
     from pyramid_oereb.contrib.data_sources.oereblex.sources.plr_oereblex import DatabaseOEREBlexSource
     from pyramid_oereb.contrib.data_sources.oereblex.sources.document import OEREBlexSource
     source = DatabaseOEREBlexSource(**plr_source_params)
-    assert source._queried_geolinks == {}
     assert isinstance(source._oereblex_source, OEREBlexSource)
 
 
@@ -744,17 +701,11 @@ def test_get_document_records(plr_source_params, document_records, params, plrs_
 def test_document_records_from_oereblex(plr_source_params, document_records, params, law_status_records):
     with patch(
             'pyramid_oereb.contrib.data_sources.oereblex.sources.document.OEREBlexSource.read',
-            return_value=None
-    ), patch(
-        "pyramid_oereb.contrib.data_sources.oereblex.sources.document.OEREBlexSource.records",
-        document_records
+            return_value=document_records
     ):
         from pyramid_oereb.contrib.data_sources.oereblex.sources.plr_oereblex import DatabaseOEREBlexSource
 
         source = DatabaseOEREBlexSource(**plr_source_params)
-        # since we patch the original read method out of the way, we need to mimikri the logic encapsulated
-        # there
-        source._queried_geolinks[params.identifier] = {}
         assert source.document_records_from_oereblex(
             params,
             1,
@@ -763,13 +714,68 @@ def test_document_records_from_oereblex(plr_source_params, document_records, par
         ) == document_records
 
 
-def test_oereblex_source_read(plr_source_params, params, real_estate, bbox):
+def test_document_records_from_oereblex_cache(plr_source_params, document_records, params,
+                                              law_status_records):
     with patch(
-            'pyramid_oereb.contrib.data_sources.standard.sources.plr.DatabaseSource.read',
-            return_value=None
-    ):
+            'pyramid_oereb.contrib.data_sources.oereblex.sources.document.OEREBlexSource.read',
+            return_value=document_records
+    ) as mock_read:
         from pyramid_oereb.contrib.data_sources.oereblex.sources.plr_oereblex import DatabaseOEREBlexSource
 
         source = DatabaseOEREBlexSource(**plr_source_params)
-        source.read(params, real_estate, bbox)
-        assert params.identifier not in source._queried_geolinks
+        result1 = source.document_records_from_oereblex(
+            params,
+            1,
+            law_status_records[0],
+            "oereb_id=5"
+        )
+        assert result1 == document_records
+        assert mock_read.call_count == 1
+
+        # Second call with same params should use cache
+        result2 = source.document_records_from_oereblex(
+            params,
+            1,
+            law_status_records[0],
+            "oereb_id=5"
+        )
+        assert result2 == result1
+        assert mock_read.call_count == 1
+
+        # Verify params object is in WeakKeyDictionary
+        assert params in source._oereblex_cache
+
+
+def test_document_records_from_oereblex_request_isolation(
+        plr_source_params, document_records, law_status_records
+):
+    from pyramid_oereb.contrib.data_sources.oereblex.sources.plr_oereblex import DatabaseOEREBlexSource
+    from pyramid_oereb.core.views.webservice import Parameter
+
+    with patch('pyramid_oereb.contrib.data_sources.oereblex.sources.document.OEREBlexSource.read',
+               return_value=document_records) as mock_read:
+        source = DatabaseOEREBlexSource(**plr_source_params)
+
+        params1 = Parameter('xml', language='de')
+        source.document_records_from_oereblex(params1, 1, law_status_records[0], "oereb_id=5")
+        assert mock_read.call_count == 1
+
+        # Second request must call OEREBlexSource.read again
+        params2 = Parameter('xml', language='de')
+        source.document_records_from_oereblex(params2, 1, law_status_records[0], "oereb_id=5")
+
+        assert mock_read.call_count == 2
+
+
+def test_weakref_cache_cleanup(plr_source_params):
+    from pyramid_oereb.contrib.data_sources.oereblex.sources.plr_oereblex import DatabaseOEREBlexSource
+
+    source = DatabaseOEREBlexSource(**plr_source_params)
+    local_params = Parameter('xml', language='de')
+
+    source._oereblex_cache[local_params] = {"some": "data"}
+    assert local_params in source._oereblex_cache
+
+    del local_params
+
+    assert len(source._oereblex_cache) == 0

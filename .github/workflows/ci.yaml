@@ -1,13 +1,16 @@
 name: CI
 on: [push]
 
+permissions:
+  contents: read
+
 jobs:
 
   lint:
     name: Check style (lint)
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - run: sudo rm /etc/apt/sources.list.d/*.list
       - run: sudo apt update
       - run: sudo apt-get install libpq-dev
@@ -16,9 +19,9 @@ jobs:
 
   gitattributes:
     name: Check style (git-attributes)
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - run: sudo rm /etc/apt/sources.list.d/*.list
       - run: sudo apt update
       - run: sudo apt-get install libpq-dev
@@ -27,7 +30,10 @@ jobs:
 
   test-py:
     name: Test Python
-    runs-on: ubuntu-24.04
+    permissions:
+      packages: write
+      pull-requests: write
+    runs-on: ubuntu-26.04
     services:
       # Label used to access the service container
       postgres:
@@ -47,24 +53,25 @@ jobs:
     strategy:
       matrix:
         python-version:
-          - '3.9'
           - '3.10'
           - '3.11'
           - '3.12'
+          - '3.13'
+          - '3.14'
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - name: Set up Python v${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
           architecture: x64
       - run: sudo rm /etc/apt/sources.list.d/*.list
       - run: sudo apt update
-      - run: sudo apt-get install libpq-dev
+      - run: sudo apt-get install libpq-dev libxml2-dev libxslt1-dev
       - name: Run tests for Python ${{ matrix.python-version }}
         run: make tests
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v7
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           env_vars: OS,PYTHON
@@ -76,9 +83,9 @@ jobs:
 
   test-fed-data:
     name: Check federal data definitions
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - run: sudo rm /etc/apt/sources.list.d/*.list
       - run: sudo apt update
       - run: sudo apt-get install xsltproc
@@ -93,9 +100,11 @@ jobs:
   doc:
     name: Make and deploy documentation
     if: github.ref == 'refs/heads/master'
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
+    permissions:
+      contents: write
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - name: Make documentation
         run: |
           sudo rm /etc/apt/sources.list.d/*.list
@@ -103,21 +112,23 @@ jobs:
           sudo apt-get install libpq-dev
           make doc-html
       - name: Deploy 🚀
-        uses: JamesIves/github-pages-deploy-action@v4.7.3
+        uses: JamesIves/github-pages-deploy-action@v4.9.0
         with:
           branch: gh-pages # The branch the action should deploy to.
           folder: doc/build/html # The folder the action should deploy.
 
   build-and-publish:
     name: Build and publish Python 🐍 distributions 📦 to PyPI
-    runs-on: ubuntu-24.04
+    permissions:
+      packages: write
+    runs-on: ubuntu-26.04
     needs: [lint, gitattributes]
     steps:
     - uses: actions/checkout@master
-    - name: Set up Python 3.12
-      uses: actions/setup-python@v5
+    - name: Set up Python 3.14
+      uses: actions/setup-python@v7
       with:
-        python-version: 3.12
+        python-version: 3.14
     - name: Install pypa/build
       run: >-
         python -m

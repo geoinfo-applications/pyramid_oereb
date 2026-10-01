@@ -34,17 +34,11 @@ class ExtractRecord(object):
             extract.
     """
 
-    creation_date = None
-    electronic_signature = None
-    concerned_theme = None
-    not_concerned_theme = None
-    theme_without_data = None
-    extract_identifier = None
-
     def __init__(self, real_estate, logo_plr_cadastre, federal_logo, cantonal_logo, municipality_logo,
                  plr_cadastre_authority, update_date_os, disclaimers=None, glossaries=None,
-                 concerned_theme=None, concerned_sub_themes=None, not_concerned_theme=None, not_concerned_sub_themes=None, theme_without_data=None,
-                 general_information=None, qr_code=None, qr_code_ref=None):
+                 concerned_theme=None, not_concerned_theme=None, theme_without_data=None,
+                 general_information=None, qr_code=None, qr_code_ref=None,
+                 concerned_sub_themes=None, not_concerned_sub_themes=None):
         """
         Args:
             real_estate (pyramid_oereb.lib.records.real_estate.RealEstateRecord): The real estate in its
@@ -71,6 +65,10 @@ class ExtractRecord(object):
             qr_code (pyramid_oereb.lib.records.image.ImageRecord or None): QR code for the extract
                 as ImageRecord.
             qr_code_ref (str or None): The URL to retrieve the QR code.
+            concerned_sub_themes (list of dict or None): One entry per concerned theme, each holding the
+                theme's sub theme record under "sub_theme" (None for a main theme) and the index the
+                entry sorts by under "extract_index".
+            not_concerned_sub_themes (list of dict or None): The same, for the not concerned themes.
         """
         if not isinstance(update_date_os, datetime):
             warnings.warn('Type of "update_date_os" should be "datetime.datetime"')
@@ -80,6 +78,7 @@ class ExtractRecord(object):
         self.update_date_os = update_date_os
         self.general_information = general_information
         self.extract_identifier = str(uuid.uuid4())
+        self.electronic_signature = None
         self.real_estate = real_estate
         if concerned_theme:
             self.concerned_theme = concerned_theme
