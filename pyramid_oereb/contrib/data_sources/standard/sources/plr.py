@@ -671,6 +671,20 @@ class DatabaseSource(BaseDatabaseSource, PlrBaseSource):
 
         return legend_entries_from_db
 
+    def _themes_for_empty_record(self):
+        """
+        Resolves the theme and, where the configuration declares one, the sub theme an empty
+        record has to carry.
+
+        Returns:
+            tuple: the theme record and the sub theme record, the latter None for a main theme.
+        """
+        theme = Config.get_theme_by_code_sub_code(self._plr_info['code'])
+        sub_code = self._plr_info.get('sub_code')
+        if sub_code is None:
+            return theme, None
+        return theme, Config.get_theme_by_code_sub_code(self._plr_info['code'], sub_code)
+
     def read(self, params, real_estate, bbox):  # pylint: disable=W:0221
         """
         The read point which creates an extract, depending on a passed real estate.
@@ -693,7 +707,9 @@ class DatabaseSource(BaseDatabaseSource, PlrBaseSource):
             try:
                 if session.query(self._model_).count() == 0:
                     # We can stop here already because there are no items in the database
-                    records = [EmptyPlrRecord(Config.get_theme_by_code_sub_code(self._plr_info['code']))]
+                    theme, sub_theme = self._themes_for_empty_record()
+                    if not self._plr_info.get('ignore', False):
+                        records = [EmptyPlrRecord(theme, True, sub_theme)]
                 else:
                     # We need to investigate more in detail
 
@@ -704,9 +720,9 @@ class DatabaseSource(BaseDatabaseSource, PlrBaseSource):
                     if len(geometry_results) == 0:
                         # We checked if there are spatially related elements in database. But there is none.
                         # So we can stop here.
-                        records = [EmptyPlrRecord(
-                            Config.get_theme_by_code_sub_code(self._plr_info['code'])
-                        )]
+                        theme, sub_theme = self._themes_for_empty_record()
+                        if not self._plr_info.get('ignore', False):
+                            records = [EmptyPlrRecord(theme, True, sub_theme)]
                     else:
                         # We found spatially related elements. This means we need to extract the actual plr
                         # information related to the found geometries.

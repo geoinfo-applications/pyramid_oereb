@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
-from operator import attrgetter
+from operator import attrgetter, itemgetter
 from pyramid.path import DottedNameResolver
 
 from shapely.geometry import box
@@ -42,6 +42,30 @@ class ExtractReader(object):
         """
         return self._plr_cadastre_authority_
 
+    def sub_theme_entry(self, plr, index):
+        """
+        Builds the entry that accompanies a theme in the concerned and not concerned lists.
+
+        A sub theme sorts by its own extract index. A main theme has no index below the theme
+        level, so it sorts by its theme index with the record's position appended as a fraction,
+        which keeps the themes apart without reordering them.
+
+        Args:
+            plr (pyramid_oereb.core.records.plr.PlrRecord or
+                pyramid_oereb.core.records.plr.EmptyPlrRecord): The record the theme came from.
+            index (int): The position of the record in the real estate's restrictions.
+
+        Returns:
+            dict: The sub theme record under "sub_theme", None for a main theme, and the value to
+                sort by under "extract_index".
+        """
+        if plr.sub_theme is not None:
+            return {'extract_index': plr.sub_theme.extract_index, 'sub_theme': plr.sub_theme}
+        return {
+            'extract_index': float(str(plr.theme.extract_index) + "." + str(index)[::-1]),
+            'sub_theme': None,
+        }
+
     def read(self, params, real_estate, municipality):
         """
         This method finally creates the extract.
@@ -69,7 +93,9 @@ class ExtractReader(object):
         bbox = box(bbox[0], bbox[1], bbox[2], bbox[3])
 
         concerned_themes = list()
+        concerned_sub_themes = list()
         not_concerned_themes = list()
+        not_concerned_sub_themes = list()
         themes_without_data = list()
 
         if municipality.published:
@@ -85,16 +111,26 @@ class ExtractReader(object):
                             ]
                         real_estate.public_law_restrictions.append(record)
 
-            for plr in real_estate.public_law_restrictions:
+            for index, plr in enumerate(real_estate.public_law_restrictions):
 
                 # Filter topics due to topics parameter
                 if not params.skip_topic(plr.theme.code):
                     if isinstance(plr, PlrRecord):
-                        if plr.theme.code not in [theme.code for theme in concerned_themes]:
+                        known_sub_codes = [
+                            entry['sub_theme'].sub_code for entry in concerned_sub_themes
+                            if entry['sub_theme'] is not None
+                        ]
+                        sub_theme_is_new = (
+                            plr.sub_theme is not None and plr.sub_theme.sub_code not in known_sub_codes
+                        )
+                        known_theme_codes = [theme.code for theme in concerned_themes]
+                        if plr.theme.code not in known_theme_codes or sub_theme_is_new:
                             concerned_themes.append(plr.theme)
+                            concerned_sub_themes.append(self.sub_theme_entry(plr, index))
                     elif isinstance(plr, EmptyPlrRecord):
                         if plr.has_data:
                             not_concerned_themes.append(plr.theme)
+                            not_concerned_sub_themes.append(self.sub_theme_entry(plr, index))
                         else:
                             themes_without_data.append(plr.theme)
 
@@ -104,7 +140,9 @@ class ExtractReader(object):
 
         # sort theme lists
         concerned_themes.sort(key=attrgetter('extract_index'))
+        concerned_sub_themes.sort(key=itemgetter('extract_index'))
         not_concerned_themes.sort(key=attrgetter('extract_index'))
+        not_concerned_sub_themes.sort(key=itemgetter('extract_index'))
         themes_without_data.sort(key=attrgetter('extract_index'))
 
         # sort plr according to theme, sub-theme and law-status
@@ -138,7 +176,9 @@ class ExtractReader(object):
             self.plr_cadastre_authority,
             update_date_os,
             concerned_theme=concerned_themes,
+            concerned_sub_themes=concerned_sub_themes,
             not_concerned_theme=not_concerned_themes,
+            not_concerned_sub_themes=not_concerned_sub_themes,
             theme_without_data=themes_without_data,
             general_information=general_information,
             qr_code=qr_code_image,
